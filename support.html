@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="google" content="notranslate">
+<title>VROX Nabd — Support</title>
+<style>
+:root{--bg:#0A0E17;--ca:#141B2D;--br:#2B2D42;--mu:#8D99AE;--di:#5A5F6E;--cy:#00B4D8;--gr:#2EC4B6;--or:#F4A261;--re:#E63946;--pu:#9B5DE5}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:system-ui,sans-serif;background:var(--bg);color:#EDF2F4;display:flex;min-height:100vh}
+.side{width:170px;background:#0D1321;border-right:1px solid var(--br);padding:10px;flex-shrink:0}
+.side h1{font-size:12px;color:var(--cy);margin-bottom:10px;font-weight:900}
+.side button{display:block;padding:6px 8px;font-size:9px;color:var(--mu);cursor:pointer;border-radius:4px;margin-bottom:2px;border:none;background:none;width:100%;text-align:right;font-family:inherit}
+.side button:hover,.side button.on{background:var(--ca);color:#EDF2F4}
+.side input{width:100%;padding:5px 8px;margin:8px 0;background:var(--ca);border:1px solid var(--br);border-radius:4px;color:#EDF2F4;font-size:9px;outline:none;font-family:inherit}
+.side input:focus{border-color:var(--cy)}
+.main{flex:1;padding:10px 14px;overflow-y:auto}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.head h2{font-size:15px}.head span{font-size:9px;color:var(--di)}
+.stats{display:flex;gap:6px;margin-bottom:6px}
+.st{flex:1;background:var(--ca);border:1px solid var(--br);border-radius:6px;padding:8px;text-align:center;cursor:pointer}.st:hover{border-color:var(--cy)}
+.st .sn{font-size:7px;font-weight:700;color:var(--di)}.st .sv{font-size:20px;font-weight:900;margin:2px 0}.st .ss{font-size:7px;color:var(--di)}
+.chips{display:flex;gap:3px;margin-bottom:6px;flex-wrap:wrap}
+.chip{padding:3px 8px;border-radius:6px;font-size:8px;cursor:pointer;border:1px solid var(--br);background:var(--ca);color:var(--mu);font-weight:600}
+.chip.on{background:rgba(0,180,216,.1);border-color:var(--cy);color:var(--cy)}
+table{width:100%;border-collapse:collapse;font-size:9px}
+th{text-align:right;padding:4px 6px;background:var(--ca);color:var(--di);font-weight:600;border-bottom:1px solid var(--br);font-size:7px}
+td{padding:4px 6px;border-bottom:1px solid rgba(43,45,66,.3);cursor:pointer}tr:hover td{background:rgba(20,27,45,.5)}
+.g{color:var(--gr)}.w{color:var(--or)}.r{color:var(--re)}.b{color:var(--cy)}.p{color:var(--pu)}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);z-index:1000;overflow-y:auto}
+.modal-overlay.on{display:block}
+.modal{background:#0D1321;border:1px solid var(--br);border-radius:10px;max-width:650px;margin:15px auto;padding:14px}
+.modal h3{font-size:15px}.modal .meta{font-size:9px;color:var(--mu);margin-bottom:8px}
+.modal .cls{float:left;color:var(--mu);font-size:16px;cursor:pointer;width:24px;height:24px;line-height:24px;text-align:center;border-radius:50%;border:1px solid var(--br);background:transparent}
+.rg{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.rp{background:var(--ca);border:1px solid var(--br);border-radius:6px;padding:8px}
+.rp .rl{font-size:7px;font-weight:700;color:var(--di);text-transform:uppercase;margin-bottom:2px}
+.rp .rv{font-size:14px;font-weight:700;color:#EDF2F4}.rp .rs{font-size:7px;color:var(--di)}
+.rp-full{grid-column:1/-1}
+.rbar{background:rgba(43,45,66,.6);height:3px;border-radius:2px;margin-top:2px;overflow:hidden}
+.rbar .fill{height:100%;border-radius:2px}.f-b{background:linear-gradient(90deg,var(--cy),#48CAE4)}.f-g{background:linear-gradient(90deg,var(--gr),#48CAE4)}
+.alarm-row{display:flex;align-items:center;gap:5px;font-size:8px;padding:3px 0;border-bottom:1px solid rgba(43,45,66,.2)}
+.alarm-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.login-box{display:flex;align-items:center;justify-content:center;width:100%;height:100vh}
+.login-box div{text-align:center;max-width:280px}
+.login-box h1{font-size:20px;font-weight:900;color:var(--cy)}.login-box .sub{font-size:10px;color:var(--pu);font-weight:700;margin-bottom:16px}
+.login-box input{display:block;width:100%;padding:10px;margin-bottom:8px;background:var(--ca);border:1px solid var(--br);border-radius:8px;color:#EDF2F4;font-size:13px;outline:none;text-align:center;font-family:inherit}
+.login-box input:focus{border-color:var(--cy)}
+.login-box button{width:100%;padding:10px;background:var(--cy);color:var(--bg);border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.login-box .err{color:var(--re);font-size:10px;margin-top:5px}
+</style></head><body>
+
+<div id="loginScreen" class="login-box"><div>
+  <h1>VROX KING</h1><div class="sub">Nabd Technical Support</div>
+  <input type="password" id="p" placeholder="Password" onkeypress="if(event.key==='Enter')L()">
+  <button onclick="L()">Access Support</button>
+  <div class="err" id="err"></div>
+</div></div>
+
+<div id="app" style="display:none;width:100%">
+<div class="side">
+  <h1>VROX Nabd</h1>
+  <button class="on" onclick="F('all',this)">All Units</button>
+  <button onclick="F('SRAYAN',this)">SRAYAN</button><button onclick="F('TRICORA',this)">Tricora</button>
+  <button onclick="F('TITAN',this)">Titan</button><button onclick="F('STATIC',this)">Static</button>
+  <button onclick="F('SEA_CONTAINER',this)">Sea</button><button onclick="F('AIR_CONTAINER',this)">Air</button>
+  <input type="text" id="srch" placeholder="Search ID..." onkeypress="if(event.key==='Enter')S()">
+  <div id="sres" style="font-size:7px;color:var(--di)"></div>
+  <button style="color:var(--re);margin-top:20px;border-top:1px solid var(--br);padding-top:10px;width:100%" onclick="localStorage.clear();location.reload()">Logout</button>
+</div>
+<div class="main">
+  <div class="head"><h2>Technical Support</h2><span style="font-size:9px;color:var(--di)" id="t"></span></div>
+  <div class="stats" id="sc"></div>
+  <div class="chips" id="ch"></div>
+  <div id="tb"><div style="text-align:center;padding:40px;color:var(--di)">Loading...</div></div>
+</div></div>
+
+<div class="modal-overlay" id="modal"><div class="modal">
+  <button class="cls" onclick="document.getElementById('modal').className='modal-overlay'">X</button>
+  <div id="mc"></div>
+</div></div>
+
+<script>
+var A='',T=localStorage.getItem('st'),all=[],flt='all',alarmData=[],ST={0:'INIT',1:'IDLE',2:'CHARGING',3:'COOLING',4:'DEFROST',5:'TITAN',99:'ERROR'};
+if(T){loginScreen.style.display='none';app.style.display='flex';X()}
+function L(){fetch(A+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'support@vrox.com',password:p.value})})
+.then(function(r){return r.json()}).then(function(d){if(d.token){T=d.token;localStorage.setItem('st',T);loginScreen.style.display='none';app.style.display='flex';X()}else err.textContent='Wrong password'}).catch(function(){err.textContent='Server offline'})}
+function X(){fetch(A+'/api/fleet/latest',{headers:{'Authorization':'Bearer '+T}}).then(function(r){return r.json()}).then(function(d){all=d;fetch(A+'/api/alarms',{headers:{'Authorization':'Bearer '+T}}).then(function(r){return r.json()}).then(function(a){alarmData=a||[];var ac=(a||[]).length;sc.innerHTML='<div class="st" onclick="F(\'all\')"><div class="sn">TOTAL</div><div class="sv">'+d.length+'</div><div class="ss">All Units</div></div><div class="st" onclick="F(\'online\')"><div class="sn">ONLINE</div><div class="sv" style="color:var(--gr)">'+d.filter(function(u){return u.state===3||u.state===1}).length+'</div></div><div class="st" onclick="F(\'charging\')"><div class="sn">CHARGING</div><div class="sv" style="color:var(--or)">'+d.filter(function(u){return u.state===2}).length+'</div></div><div class="st" onclick="F(\'alarms\')"><div class="sn">ALARMS</div><div class="sv" style="color:'+(ac>0?'var(--or)':'var(--gr)')+'">'+ac+'</div></div>';var tp=['all','SRAYAN','TRICORA','TITAN','STATIC','SEA_CONTAINER','AIR_CONTAINER'];var lb={all:'All',SRAYAN:'SRAYAN',TRICORA:'Tricora',TITAN:'Titan',STATIC:'Static',SEA_CONTAINER:'Sea',AIR_CONTAINER:'Air'};ch.innerHTML=tp.map(function(t){return '<span class="chip'+(flt===t?' on':'')+'" onclick="F(\''+t+'\',this)">'+lb[t]+'</span>'}).join('');R(d,a||[])})})}
+function F(type,el){flt=type;document.querySelectorAll('.side button').forEach(function(b){b.classList.remove('on')});document.querySelectorAll('.chip').forEach(function(c){c.classList.remove('on')});document.querySelectorAll('.st').forEach(function(s){s.classList.remove('on')});if(el)el.classList.add('on');var f;if(type==='all')f=all;else if(type==='online')f=all.filter(function(u){return u.state===3||u.state===1});else if(type==='charging')f=all.filter(function(u){return u.state===2});else if(type==='alarms'){fetch(A+'/api/alarms',{headers:{'Authorization':'Bearer '+T}}).then(function(r){return r.json()}).then(function(a){var alarmIds=(a||[]).map(function(x){return x.truck_name}).filter(function(v,i,s){return s.indexOf(v)===i});R(all.filter(function(u){return alarmIds.indexOf(u.name)>=0}))});return}else f=all.filter(function(u){return u.type===type});R(f)}
+function R(d){if(!d.length){tb.innerHTML='<div style="text-align:center;padding:40px;color:var(--di)">No units</div>';return}var alarmMap={};alarmData.forEach(function(a){alarmMap[a.truck_name]=(alarmMap[a.truck_name]||0)+1});var h='<table><tr><th>Unit</th><th>Type</th><th>Box</th><th>Plate/SOC</th><th>State</th><th>Details</th></tr>';d.forEach(function(u){var c=u.state===3?'g':u.state===99?'r':'w';var dt=u.type==='SRAYAN'?(u.engine_rpm>0?'RPM '+Math.round(u.engine_rpm):'OFF'):u.type==='TRICORA'?u.plates+' Plates':u.type==='TITAN'?'Station':'';var alarmCount=alarmMap[u.name]||0;var alarmBadge=alarmCount?'<span style="color:'+(alarmCount>1?'var(--re)':'var(--or)')+';font-weight:700">⚠'+alarmCount+'</span> ':'';var rowStyle=alarmCount?'border-left:2px solid '+(alarmCount>1?'var(--re)':'var(--or)'):'';h+='<tr onclick="U(\''+u.id+'\',\''+u.name+'\',\''+u.type+'\','+(u.plates||1)+')" style="'+rowStyle+'"><td><b>'+alarmBadge+u.name+'</b><br><span style="font-size:6px;color:var(--di)">'+u.id+'</span></td><td>'+u.type+'</td><td class="'+c+'">'+(u.t_box?u.t_box.toFixed(1):'--')+'C</td><td>'+(u.t_plate?u.t_plate.toFixed(1):'--')+'C / '+(u.plate_soc?Math.round(u.plate_soc):'--')+'%</td><td class="'+c+'">'+ST[u.state]+'</td><td style="font-size:7px;color:var(--di)">'+dt+'</td></tr>'});tb.innerHTML=h+'</table>'}
+function U(id,name,type,pl){fetch(A+'/api/truck/latest?id='+id).then(function(r){return r.json()}).then(function(d){fetch(A+'/api/alarms?truck='+id,{headers:{'Authorization':'Bearer '+T}}).then(function(r){return r.json()}).then(function(a){var so=Math.round(d.plate_soc||0),rp=d.engine_rpm||0,fu=d.fuel_saved||0,am=d.ambient||42;var bx=d.t_box?d.t_box.toFixed(1):'--',pt=d.t_plate?d.t_plate.toFixed(1):'--';var on=rp>0;var h='<h3>'+name+'</h3><div class="meta">'+type+' &bull; '+pl+' plates &bull; '+id+'</div><div class="rg">';
+if(type==='SRAYAN'){h+='<div class="rp"><div class="rl">Box</div><div class="rv" style="color:var(--cy)">'+bx+'C</div></div><div class="rp"><div class="rl">Plate</div><div class="rv" style="color:var(--cy)">'+pt+'C</div><div class="rbar"><div class="fill f-b" style="width:'+so+'%"></div></div><div class="rs">SOC '+so+'%</div></div><div class="rp"><div class="rl">Diesel</div><div class="rv" style="color:'+(on?'var(--or)':'var(--mu)')+'">'+(on?Math.round(rp):0)+'</div><div class="rs">RPM (850~1450)</div></div><div class="rp"><div class="rl">Compressor</div><div class="rv" style="color:'+(on?'var(--or)':'var(--mu)')+'">'+(on?'LOAD':'OFF')+'</div></div><div class="rp"><div class="rl">Flow</div><div class="rv" style="color:var(--cy)">'+(on?55:0)+' L/min</div></div><div class="rp"><div class="rl">Fuel Saved</div><div class="rv g">'+Math.round(fu)+'L</div><div class="rs">'+Math.round(am)+'C</div></div><div class="rp rp-full"><div class="rl">Coil & Pumps</div><div class="rs">In: -19C | Out: -17C | dT: 2K | Flow: 45 L/min | Fans: 60% | Main: 70% | Coil: 25% | Titan: SEALED</div></div>'}
+else if(type==='TRICORA'){h+='<div class="rp"><div class="rl">Box</div><div class="rv g">'+bx+'C</div></div><div class="rp"><div class="rl">Plates Avg</div><div class="rv g">'+pt+'C</div><div class="rbar"><div class="fill f-g" style="width:'+so+'%"></div></div><div class="rs">SOC '+so+'%</div></div><div class="rp"><div class="rl">Autonomy</div><div class="rv g">'+(so>0?(so*0.25).toFixed(1):'0')+'h</div></div><div class="rp"><div class="rl">Energy</div><div class="rv" style="color:var(--cy)">'+(pl*1.1*so/100).toFixed(1)+'kWh</div></div>';h+='<div class="rp rp-full"><div class="rl">'+pl+' Plates</div>';for(var i=0;i<pl;i++){var pv=parseFloat(pt)-Math.random()*6+Math.random()*3;h+='<span style="display:inline-block;width:40px;text-align:center;font-size:7px;margin:1px">#'+(i+1)+'<br><b style="color:'+(pv<-28?'var(--cy)':pv<-15?'var(--or)':'var(--re)')+'">'+pv.toFixed(1)+'C</b></span>'}h+='</div>'}
+else if(type==='TITAN'){h+='<div class="rp"><div class="rl">Supply</div><div class="rv p">-42C</div></div><div class="rp"><div class="rl">Flow</div><div class="rv" style="color:var(--cy)">100 L/min</div></div><div class="rp"><div class="rl">Compressor</div><div class="rv g">45 HP</div></div><div class="rp"><div class="rl">Sessions</div><div class="rv">1,247</div></div><div class="rp rp-full"><div class="rl">Specs</div><div class="rs">Titan Standard &bull; Auto-Recognition &bull; MQTT</div></div>'}
+else if(type==='STATIC'){h+='<div class="rp"><div class="rl">Room</div><div class="rv g">'+bx+'C</div></div><div class="rp"><div class="rl">Tank</div><div class="rv" style="color:var(--cy)">'+pt+'C</div><div class="rbar"><div class="fill f-b" style="width:'+so+'%"></div></div><div class="rs">SOC '+so+'%</div></div><div class="rp"><div class="rl">Power</div><div class="rv g">10 HP</div></div><div class="rp"><div class="rl">Volume</div><div class="rv">1000L</div></div><div class="rp"><div class="rl">Cost</div><div class="rv g">$2.5/day</div></div><div class="rp"><div class="rl">Ambient</div><div class="rv">'+Math.round(am)+'C</div></div>'}
+else{h+='<div class="rp"><div class="rl">Box</div><div class="rv g">'+bx+'C</div></div><div class="rp"><div class="rl">Plate</div><div class="rv" style="color:var(--cy)">'+pt+'C</div></div><div class="rp"><div class="rl">Ambient</div><div class="rv">'+Math.round(am)+'C</div></div><div class="rp"><div class="rl">Type</div><div class="rv" style="font-size:12px">'+type+'</div></div>'}
+h+='<div class="rp rp-full"><div class="rl">Alarms</div>';
+if(a&&a.length)a.forEach(function(x){var c=x.level==='critical'?'var(--re)':x.level==='warning'?'var(--or)':'var(--gr)';h+='<div class="alarm-row"><span class="alarm-dot" style="background:'+c+'"></span>'+x.timestamp+' — '+x.message+'</div>'});
+else h+='<span style="font-size:8px;color:var(--gr)">No active alarms</span>';
+h+='</div><div class="rp rp-full"><div class="rl">System</div><div class="rs">KCOOH+KAc 35/20 | Eutectic -48C | SS316L Roll-Bond | Vacuum < 0.01 mbar</div></div></div>';mc.innerHTML=h;document.getElementById('modal').className='modal-overlay on'})})}
+function S(){var q=srch.value.trim().toUpperCase();if(!q)return;var f=all.filter(function(u){return u.id.toUpperCase().indexOf(q)>=0||u.name.toUpperCase().indexOf(q)>=0});if(f.length===1){U(f[0].id,f[0].name,f[0].type,f[0].plates||1);sres.textContent=''}else if(f.length>1){sres.textContent=f.length+' matches — click one';filterView('search',null);R(f)}else{sres.textContent='Not found'}}
+setInterval(function(){t.textContent=new Date().toLocaleTimeString();if(app.style.display==='flex')X()},300000)
+</script></body></html>

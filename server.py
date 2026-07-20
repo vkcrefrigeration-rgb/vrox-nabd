@@ -19,9 +19,42 @@ from urllib.parse import urlparse, parse_qs
 
 # ==================== CONFIG ====================
 PORT = int(os.environ.get("PORT", 3000))
-DB_FILE = "nabd_data.db"
+DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "nabd_data.db")
 HOST = "0.0.0.0"
+MAX_LOGIN_TRIES = 100      # Max login attempts
+LOGIN_BLOCK_MINUTES = 1 # Block after exceeding
+RATE_LIMIT_WINDOW = 60   # 1 minute window
+MAX_REQUESTS_PER_MINUTE = 500
 # ===============================================
+
+# ==================== RATE LIMITING ====================
+login_attempts = {}  # {ip: [timestamp, count, blocked_until]}
+rate_tracker = {}    # {ip: [timestamps...]}
+
+def check_rate_limit(ip, endpoint):
+    now = time.time()
+    if ip not in rate_tracker:
+        rate_tracker[ip] = []
+    rate_tracker[ip] = [t for t in rate_tracker[ip] if now - t < RATE_LIMIT_WINDOW]
+    rate_tracker[ip].append(now)
+    if len(rate_tracker[ip]) > MAX_REQUESTS_PER_MINUTE:
+        return False
+    return True
+
+def check_login_rate(ip):
+    now = time.time()
+    if ip not in login_attempts:
+        login_attempts[ip] = [now, 0, 0]
+    data = login_attempts[ip]
+    if data[2] > now:
+        return False, f"Blocked for {int((data[2]-now)/60)+1} minutes"
+    if now - data[0] > 300:
+        data[0] = now; data[1] = 0
+    data[1] += 1
+    if data[1] > MAX_LOGIN_TRIES:
+        data[2] = now + LOGIN_BLOCK_MINUTES * 60
+        return False, f"Too many attempts — blocked {LOGIN_BLOCK_MINUTES} minutes"
+    return True, None
 
 # ==================== DATABASE ====================
 def init_db():
@@ -51,7 +84,7 @@ def init_db():
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         user_id INTEGER NOT NULL,
-        system_type TEXT DEFAULT 'SARYAN',
+        system_type TEXT DEFAULT 'SRAYAN',
         plate_count INTEGER DEFAULT 1,
         FOREIGN KEY (user_id) REFERENCES users(id)
     )''')
@@ -72,7 +105,28 @@ def init_db():
         FOREIGN KEY (truck_id) REFERENCES trucks(id)
     )''')
     
-    # Add demo user if not exists
+    # Alarms
+    c.execute('''CREATE TABLE IF NOT EXISTS alarms (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        truck_id TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        code INTEGER,
+        message TEXT,
+        level TEXT DEFAULT 'warning',
+        acknowledged INTEGER DEFAULT 0,
+        FOREIGN KEY (truck_id) REFERENCES trucks(id)
+    )''')
+    
+    # GPS tracking
+    c.execute('''CREATE TABLE IF NOT EXISTS gps_data (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        truck_id TEXT NOT NULL,
+        timestamp TEXT NOT NULL,
+        lat REAL,
+        lng REAL,
+        speed REAL,
+        FOREIGN KEY (truck_id) REFERENCES trucks(id)
+    )''')
     c.execute("SELECT COUNT(*) FROM users WHERE email = 'demo@vrox.com'")
     if c.fetchone()[0] == 0:
         password_hash = hashlib.sha256("demo123".encode()).hexdigest()
@@ -82,9 +136,9 @@ def init_db():
         # Add demo trucks
         user_id = c.lastrowid
         for truck in [
-            ("TRK-001", "Saryan Truck 01", "SARYAN", 1),
+            ("TRK-001", "SRAYAN Truck 01", "SRAYAN", 1),
             ("TRK-002", "Tricora Truck 02", "TRICORA", 14),
-            ("TRK-003", "Saryan Truck 03", "SARYAN", 1),
+            ("TRK-003", "SRAYAN Truck 03", "SRAYAN", 1),
         ]:
             c.execute("INSERT INTO trucks (id, name, user_id, system_type, plate_count) VALUES (?,?,?,?,?)",
                       (truck[0], truck[1], user_id, truck[2], truck[3]))
@@ -138,6 +192,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
         self.end_headers()
         self.wfile.write(json.dumps(data, ensure_ascii=False).encode())
     
@@ -148,13 +203,46 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
     def do_POST(self):
         path = urlparse(self.path).path
         
+        if path == "/api/register":
+            body = self.get_body()
+            unit_id = body.get("id","")
+            name = body.get("name","")
+            unit_type = body.get("type","SRAYAN")
+            plates = body.get("plates",1)
+            email = body.get("email","")
+            
+            conn = sqlite3.connect(DB_FILE)
+            c = conn.execute("SELECT id FROM users WHERE email = ?", (email,))
+            user = c.fetchone()
+            if not user:
+                # Auto-create user
+                pw = hashlib.sha256(("auto"+email).encode()).hexdigest()
+                c.execute("INSERT INTO users (email, password_hash, name, company) VALUES (?,?,?,?)",
+                          (email, pw, email.split("@")[0], "Auto Registered"))
+                user_id = c.lastrowid
+            else:
+                user_id = user[0]
+            
+            c.execute("INSERT OR REPLACE INTO trucks (id, name, user_id, system_type, plate_count) VALUES (?,?,?,?,?)",
+                      (unit_id, name, user_id, unit_type, plates))
+            conn.commit()
+            conn.close()
+            self.send_json({"status":"registered","unit_id":unit_id})
+            return
+        
         if path == "/api/login":
+            ip = self.client_address[0]
+            allowed, msg = check_login_rate(ip)
+            if not allowed:
+                self.send_json({"error": msg}, 429)
+                return
+            
             body = self.get_body()
             email = body.get("email", "")
             password = body.get("password", "")
             
             conn = sqlite3.connect(DB_FILE)
-            c = conn.execute("SELECT id, name, company, password_hash FROM users WHERE email = ?", (email,))
+            c = conn.execute("SELECT id, name, company, password_hash, role FROM users WHERE email = ?", (email,))
             row = c.fetchone()
             conn.close()
             
@@ -162,7 +250,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                 token = create_token(row[0])
                 self.send_json({
                     "token": token,
-                    "user": {"id": row[0], "name": row[1], "company": row[2], "email": email}
+                    "user": {"id": row[0], "name": row[1], "company": row[2], "email": email, "role": row[4] or "client"}
                 })
             else:
                 self.send_json({"error": "Invalid credentials"}, 401)
@@ -184,6 +272,12 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
     
     def do_GET(self):
         path = urlparse(self.path).path
+        ip = self.client_address[0]
+        
+        # Rate limit all API calls
+        if path.startswith("/api/") and not check_rate_limit(ip, path):
+            self.send_json({"error": "Rate limit exceeded"}, 429)
+            return
         
         # API routes
         if path.startswith("/api/"):
@@ -193,10 +287,78 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
             if path == "/api/trucks":
                 if not user_id: self.send_json({"error": "Unauthorized"}, 401); return
                 conn = sqlite3.connect(DB_FILE)
-                c = conn.execute("SELECT id, name, system_type, plate_count FROM trucks WHERE user_id = ?", (user_id,))
+                # Admin sees all trucks, clients see only theirs
+                c2 = conn.execute("SELECT role FROM users WHERE id = ?", (user_id,))
+                role = c2.fetchone()
+                if role and role[0] == 'admin':
+                    c = conn.execute("SELECT id, name, system_type, plate_count FROM trucks")
+                else:
+                    c = conn.execute("SELECT id, name, system_type, plate_count FROM trucks WHERE user_id = ?", (user_id,))
                 trucks = [{"id": r[0], "name": r[1], "type": r[2], "plates": r[3]} for r in c.fetchall()]
                 conn.close()
                 self.send_json(trucks)
+                return
+            
+            if path == "/api/alarms":
+                truck_id = parse_qs(urlparse(self.path).query).get("truck", [None])[0]
+                conn = sqlite3.connect(DB_FILE)
+                if truck_id:
+                    c = conn.execute("SELECT a.timestamp, a.code, a.message, a.level, a.acknowledged, t.name FROM alarms a JOIN trucks t ON a.truck_id = t.id WHERE a.truck_id = ? ORDER BY a.timestamp DESC LIMIT 20", (truck_id,))
+                else:
+                    c = conn.execute("SELECT a.timestamp, a.code, a.message, a.level, a.acknowledged, t.name FROM alarms a JOIN trucks t ON a.truck_id = t.id ORDER BY a.timestamp DESC LIMIT 30")
+                alarms = [{"timestamp": r[0], "code": r[1], "message": r[2], "level": r[3], "acknowledged": r[4], "truck_name": r[5]} for r in c.fetchall()]
+                conn.close()
+                self.send_json(alarms)
+                return
+            
+            if path == "/api/gps/latest":
+                truck_id = parse_qs(urlparse(self.path).query).get("id", [None])[0]
+                if not truck_id: self.send_json({"error": "Missing id"}, 400); return
+                conn = sqlite3.connect(DB_FILE)
+                c = conn.execute("SELECT lat, lng, speed FROM gps_data WHERE truck_id = ? ORDER BY timestamp DESC LIMIT 1", (truck_id,))
+                row = c.fetchone()
+                conn.close()
+                if row: self.send_json({"lat": row[0], "lng": row[1], "speed": row[2]})
+                else: self.send_json({"error": "No GPS data"}, 404)
+                return
+            
+            if path == "/api/predict":
+                truck_id = parse_qs(urlparse(self.path).query).get("id", [None])[0]
+                if not truck_id: self.send_json({"error": "Missing id"}, 400); return
+                conn = sqlite3.connect(DB_FILE)
+                c = conn.execute("SELECT t_box, t_plate, plate_soc, timestamp FROM truck_data WHERE truck_id = ? AND timestamp > datetime('now','-3 days') ORDER BY timestamp ASC", (truck_id,))
+                rows = c.fetchall()
+                conn.close()
+                predictions = {}
+                if len(rows) > 10:
+                    # Analyze box temp trend over last 3 days
+                    temps = [r[0] for r in rows if r[0]]
+                    if len(temps) > 5:
+                        trend = (temps[-1] - temps[0]) / len(temps)  # degrees per reading
+                        if trend > 0.05:
+                            hours_until_critical = abs((-18.0 - temps[-1]) / trend) if trend > 0 else 999
+                            predictions["box_temp"] = {"trend": round(trend*100,2), "status": "warning", "message": f"Box temp rising {round(trend*100,2)}C/day — reaching critical in ~{int(hours_until_critical)}h"}
+                        elif trend < -0.05:
+                            predictions["box_temp"] = {"trend": round(trend*100,2), "status": "ok", "message": "Box temp trend: stable/cooling"}
+                        else:
+                            predictions["box_temp"] = {"trend": round(trend*100,2), "status": "ok", "message": "Box temp: stable"}
+                    
+                    # Plate SOC degradation
+                    socs = [r[2] for r in rows if r[2]]
+                    if len(socs) > 5:
+                        plate_trend = (socs[-1] - socs[0]) / len(socs)
+                        if plate_trend < -0.1:
+                            predictions["plate_soc"] = {"trend": round(plate_trend*100,2), "status": "warning", "message": f"Plate SOC declining {abs(round(plate_trend*100,2))}% per cycle — check vacuum"}
+                        else:
+                            predictions["plate_soc"] = {"trend": round(plate_trend*100,2), "status": "ok", "message": "Plate SOC: healthy"}
+                    
+                    # Predict maintenance needs
+                    predictions["maintenance"] = []
+                    if temps and temps[-1] > -10:
+                        predictions["maintenance"].append({"item": "Coil", "status": "warning", "message": "Coil icing risk — schedule defrost check"})
+                    if len(socs) > 20 and sum(1 for s in socs[-20:] if s < 40) > 10:
+                        predictions["maintenance"].append({"item": "Vacuum Seal", "status": "critical", "message": "Plate losing capacity — vacuum check recommended"})
+                self.send_json(predictions if predictions else {"status": "insufficient_data"})
                 return
             
             if path == "/api/truck/latest":
@@ -220,6 +382,26 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
                     self.send_json({"error": "No data"}, 404)
                 return
             
+            if path == "/api/fleet/latest":
+                if not user_id: self.send_json({"error": "Unauthorized"}, 401); return
+                conn = sqlite3.connect(DB_FILE)
+                c2 = conn.execute("SELECT role FROM users WHERE id = ?", (user_id,))
+                role = c2.fetchone()
+                if role and role[0] == 'admin':
+                    c = conn.execute("SELECT id, name, system_type, plate_count FROM trucks")
+                else:
+                    c = conn.execute("SELECT id, name, system_type, plate_count FROM trucks WHERE user_id = ?", (user_id,))
+                trucks = c.fetchall()
+                result = []
+                for t in trucks:
+                    tid, name, stype, plates = t
+                    d = conn.execute("SELECT t_box, t_plate, plate_soc, state, engine_rpm, fuel_saved, ambient FROM truck_data WHERE truck_id = ? ORDER BY timestamp DESC LIMIT 1", (tid,)).fetchone()
+                    if d: result.append({"id":tid,"name":name,"type":stype,"plates":plates,"t_box":d[0],"t_plate":d[1],"plate_soc":d[2],"state":d[3],"engine_rpm":d[4],"fuel_saved":d[5],"ambient":d[6]})
+                    else: result.append({"id":tid,"name":name,"type":stype,"plates":plates,"t_box":0,"t_plate":0,"plate_soc":0,"state":1,"engine_rpm":0,"fuel_saved":0,"ambient":0})
+                conn.close()
+                self.send_json(result)
+                return
+
             self.send_json({"error": "Unknown API"}, 404)
             return
         
@@ -235,6 +417,7 @@ class APIHandler(http.server.SimpleHTTPRequestHandler):
             elif file_path.endswith(".css"): self.send_header("Content-Type", "text/css")
             elif file_path.endswith(".json"): self.send_header("Content-Type", "application/json")
             self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Cache-Control", "no-cache, no-store")
             self.end_headers()
             with open(file_path, "rb") as f:
                 self.wfile.write(f.read())
@@ -261,5 +444,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("\nServer stopped.")
         server.server_close()
+
 
 

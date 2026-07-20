@@ -1,202 +1,148 @@
 ﻿<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="en" dir="ltr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="google" content="notranslate">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>VROX KING - Nabd</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>VROX KING — Nabd</title>
 <style>
+:root{--bg:#0A0E17;--card:#141B2D;--brd:#2B2D42;--mu:#8D99AE;--di:#5A5F6E;--cy:#00B4D8;--gr:#2EC4B6;--or:#F4A261;--re:#E63946;--pu:#9B5DE5}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#0A0E17;color:#EDF2F4;display:flex;justify-content:center;align-items:center;min-height:100vh}
-.container{width:100%;max-width:480px;padding:20px}
-.login-box,.dashboard{display:none}
-.login-box.active,.dashboard.active{display:block}
-.login-box{text-align:center}
-.login-box h1{font-size:28px;font-weight:900;color:#00B4D8;margin-bottom:2px}
-.login-box .sub{font-size:13px;color:#9B5DE5;font-weight:700;margin-bottom:28px}
-.login-box input{
-  display:block;width:100%;padding:12px;margin-bottom:10px;
-  background:#141B2D;border:1px solid #2B2D42;border-radius:8px;
-  color:#EDF2F4;font-size:14px;font-family:inherit;outline:none
-}
-.login-box input:focus{border-color:#00B4D8}
-.login-box button{
-  width:100%;padding:12px;background:#00B4D8;color:#0A0E17;
-  border:none;border-radius:8px;font-size:15px;font-weight:700;
-  cursor:pointer;font-family:inherit;margin-top:4px
-}
-.login-box .err{color:#E63946;font-size:12px;margin-top:8px}
+body{font-family:system-ui,Arial,sans-serif;background:var(--bg);color:#EDF2F4;display:flex;justify-content:center;align-items:center;min-height:100vh}
+#app{width:100%;max-width:460px;padding:12px}
+.hidden{display:none}
+.login{text-align:center}.login h1{font-size:24px;font-weight:900;color:var(--cy)}.login .sub{font-size:11px;color:var(--pu);font-weight:700;margin-bottom:18px}
+.login input{display:block;width:100%;padding:10px;margin-bottom:8px;background:var(--card);border:1px solid var(--brd);border-radius:8px;color:#EDF2F4;font-size:14px;outline:none;font-family:inherit}
+.login input:focus{border-color:var(--cy)}
+.login button{width:100%;padding:10px;background:var(--cy);color:var(--bg);border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.login .err{color:var(--re);font-size:11px;margin-top:6px}
 
-.dash-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.dash-header h2{font-size:18px;color:#EDF2F4}
-.dash-header .logout{color:#E63946;font-size:12px;cursor:pointer;background:none;border:none;font-family:inherit}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.head h2{font-size:16px}.head .out{color:var(--re);font-size:10px;cursor:pointer;background:none;border:none;font-family:inherit}
 
-.truck-card{
-  background:linear-gradient(180deg,#141B2D,#0D1321);border:1px solid #2B2D42;
-  border-radius:10px;padding:14px;margin-bottom:8px;cursor:pointer;transition:0.2s
-}
-.truck-card:hover{border-color:#00B4D8}
-.truck-card .tname{font-size:15px;font-weight:700;color:#EDF2F4;margin-bottom:4px}
-.truck-card .tinfo{font-size:11px;color:#8D99AE}
-.truck-card .trow{display:flex;justify-content:space-between;margin-top:6px;font-size:12px}
-.truck-card .ttemp{font-size:28px;font-weight:900;color:#00B4D8}
-.truck-card .tbadge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:8px}
-.tbadge.ok{background:rgba(46,196,182,0.15);color:#2EC4B6;border:1px solid rgba(46,196,182,0.3)}
-.tbadge.warn{background:rgba(244,162,97,0.15);color:#F4A261;border:1px solid rgba(244,162,97,0.3)}
-.tbadge.err{background:rgba(230,57,70,0.15);color:#E63946;border:1px solid rgba(230,57,70,0.3)}
+.truck{background:linear-gradient(135deg,var(--card),#0D1321);border:1px solid var(--brd);border-radius:10px;padding:12px;margin-bottom:7px;cursor:pointer;transition:.2s}
+.truck:hover{border-color:var(--cy)}
+.truck .tn{font-size:14px;font-weight:700}.truck .ti{font-size:10px;color:var(--mu)}
+.truck .tr{display:flex;justify-content:space-between;align-items:center;margin-top:6px}
+.truck .tv{font-size:28px;font-weight:900;color:var(--cy)}
+.truck .tb{font-size:8px;font-weight:700;padding:2px 8px;border-radius:10px}
+.tb-ok{background:rgba(46,196,182,.12);color:var(--gr);border:1px solid rgba(46,196,182,.3)}
+.tb-warn{background:rgba(244,162,97,.12);color:var(--or);border:1px solid rgba(244,162,97,.3)}
+.tb-err{background:rgba(230,57,70,.12);color:var(--re);border:1px solid rgba(230,57,70,.3)}
 
-.detail{display:none}
-.detail.active{display:block}
-.back-btn{color:#8D99AE;font-size:13px;cursor:pointer;background:none;border:none;font-family:inherit;margin-bottom:12px}
-.detail-temp{text-align:center;font-size:64px;font-weight:900;color:#00B4D8;margin:8px 0}
-.detail-info{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
-.dinfo{background:linear-gradient(180deg,#141B2D,#0D1321);border:1px solid #2B2D42;border-radius:8px;padding:10px;text-align:center}
-.dinfo .dl{font-size:9px;font-weight:700;color:#8D99AE;margin-bottom:3px}
-.dinfo .dv{font-size:18px;font-weight:700;color:#EDF2F4}
+.detail h3{font-size:20px;font-weight:700;margin-bottom:4px}
+.detail .meta{font-size:10px;color:var(--mu);margin-bottom:10px}
+.detail .hero{text-align:center;font-size:56px;font-weight:900;color:var(--cy);margin-bottom:4px}
+.detail .hsub{text-align:center;font-size:11px;color:var(--mu);margin-bottom:10px}
 
-.loading{text-align:center;padding:40px;color:#8D99AE;font-size:14px}
+.gauges{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px}
+.gauge{background:var(--card);border:1px solid var(--brd);border-radius:8px;padding:8px 6px;text-align:center}
+.gauge .gl{font-size:8px;font-weight:700;color:var(--di);text-transform:uppercase;letter-spacing:1px}
+.gauge .gv{font-size:18px;font-weight:700;margin:2px 0;line-height:1.1}
+.gauge .gs{font-size:7px;color:var(--mu)}
+.gbar{background:rgba(43,45,66,.6);height:3px;border-radius:2px;margin-top:3px;overflow:hidden}
+.gbar .fill{height:100%;border-radius:2px;transition:width .5s}
+.f-b{background:linear-gradient(90deg,var(--cy),#48CAE4)}.f-g{background:linear-gradient(90deg,var(--gr),#48CAE4)}
+
+.infobox{background:var(--card);border:1px solid var(--brd);border-radius:8px;padding:8px;margin-bottom:6px}
+.infobox .ibt{font-size:8px;font-weight:700;color:var(--di);text-transform:uppercase;margin-bottom:4px}
+.ibrow{display:flex;justify-content:space-between;font-size:10px;color:var(--mu);margin-top:2px}
+.ibrow b{color:#EDF2F4}
+
+.alarm-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid rgba(43,45,66,.3);font-size:9px}
+.alarm-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+.plate-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:4px}
+.pc{background:var(--card);border:1px solid var(--brd);border-radius:4px;padding:3px 1px;text-align:center;font-size:7px}
+.pc .pn{color:var(--di)}.pc .pv{font-size:9px;font-weight:700}
+.loading{text-align:center;padding:40px;color:var(--di)}
 </style>
 </head>
 <body>
-<div class="container">
+<div id="app">
 
-  <!-- LOGIN -->
-  <div class="login-box active" id="loginBox">
-    <h1>VROX KING</h1>
-    <div class="sub">Nabd Control System</div>
-    <input type="text" id="email" placeholder="Email" value="demo@vrox.com" autocomplete="off">
-    <input type="password" id="password" placeholder="Password" value="demo123">
-    <button onclick="login()">Sign In</button>
-    <div class="err" id="loginErr"></div>
-  </div>
-
-  <!-- DASHBOARD -->
-  <div class="dashboard" id="dashboard">
-    <div class="dash-header">
-      <h2 id="userName">Fleet Dashboard</h2>
-      <button class="logout" onclick="logout()">Logout</button>
-    </div>
-    <div id="truckList"></div>
-  </div>
-
-  <!-- DETAIL -->
-  <div class="detail" id="detailView">
-    <button class="back-btn" onclick="showDashboard()">Back to Fleet</button>
-    <div class="detail-temp" id="dtTemp">--.-</div>
-    <div style="text-align:center;font-size:12px;color:#8D99AE" id="dtName"></div>
-    <div class="detail-info">
-      <div class="dinfo"><div class="dl">Plate</div><div class="dv" id="dtPlate">--.-</div></div>
-      <div class="dinfo"><div class="dl">SOC</div><div class="dv" id="dtSOC">--</div></div>
-      <div class="dinfo"><div class="dl">Engine</div><div class="dv" id="dtEngine">--</div></div>
-      <div class="dinfo"><div class="dl">Fuel Saved</div><div class="dv" style="color:#2EC4B6" id="dtFuel">--</div></div>
-      <div class="dinfo"><div class="dl">Ambient</div><div class="dv" id="dtAmb">--</div></div>
-      <div class="dinfo"><div class="dl">Status</div><div class="dv" id="dtStatus" style="font-size:13px">--</div></div>
-    </div>
-  </div>
-
+<div class="login" id="loginBox">
+  <h1>VROX KING</h1>
+  <div class="sub">Nabd Control System</div>
+  <input type="text" id="email" placeholder="Email" value="demo@vrox.com">
+  <input type="password" id="password" placeholder="Password" value="demo123">
+  <button onclick="login()">Sign In</button>
+  <div class="err" id="loginErr"></div>
 </div>
 
+<div class="hidden" id="mainView">
+  <div class="head"><h2 id="userName">Fleet</h2><button class="out" onclick="logout()">Logout</button></div>
+  <div id="fleetList"></div>
+</div>
+
+<div class="hidden" id="detailView">
+  <button style="color:var(--mu);font-size:12px;cursor:pointer;background:none;border:none;font-family:inherit;margin-bottom:8px" onclick="goBack()">← Fleet</button>
+  <div id="detailContent"></div>
+</div>
+
+</div>
 <script>
-var API = '';
+var T=localStorage.getItem('t'),N=localStorage.getItem('n'),A='';
+if(T){loginBox.className='hidden';mainView.className='';userName.textContent=(N||'')+' Fleet';load()}
+var S={0:'INIT',1:'IDLE',2:'CHARGING',3:'COOLING',4:'DEFROST',5:'TITAN',99:'ERROR'};
 
 function login(){
-  var email = document.getElementById('email').value;
-  var password = document.getElementById('password').value;
-  fetch(API + '/api/login', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({email:email, password:password})
-  }).then(function(r){ return r.json() }).then(function(data){
-    if (data.token) {
-      localStorage.setItem('nabd_token', data.token);
-      localStorage.setItem('nabd_user', data.user.name);
-      document.getElementById('userName').textContent = data.user.name + ' Fleet';
-      document.getElementById('loginErr').textContent = '';
-      document.getElementById('loginBox').classList.remove('active');
-      document.getElementById('dashboard').classList.add('active');
-      loadTrucks();
-    } else {
-      document.getElementById('loginErr').textContent = data.error || 'Login failed';
-    }
-  }).catch(function(e){
-    document.getElementById('loginErr').textContent = 'Server offline';
-  });
+  fetch(A+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:email.value,password:password.value})})
+  .then(function(r){return r.json()}).then(function(d){
+    if(d.token){T=d.token;N=d.user.name;localStorage.setItem('t',T);localStorage.setItem('n',N);loginBox.className='hidden';mainView.className='';userName.textContent=N+' Fleet';load()}
+    else loginErr.textContent='Login failed';
+  }).catch(function(){loginErr.textContent='Server offline'});
 }
 
-function loadTrucks(){
-  document.getElementById('truckList').innerHTML = '<div class="loading">Loading...</div>';
-  fetch(API + '/api/trucks', {
-    headers: {'Authorization': 'Bearer ' + localStorage.getItem('nabd_token')}
-  }).then(function(r){ return r.json() }).then(function(trucks){
-    var html = '';
-    var count = 0;
-    function addCard(){
-      count++;
-      if (count > trucks.length) {
-        document.getElementById('truckList').innerHTML = html || '<div class="loading">No trucks assigned</div>';
-        return;
+function load(){
+  fleetList.innerHTML='<div class="loading">Loading...</div>';
+  fetch(A+'/api/fleet/latest',{headers:{'Authorization':'Bearer '+T}})
+  .then(function(r){return r.json()}).then(function(units){
+    var h='';
+    units.forEach(function(u){
+      var bc=u.state===3?'tb-ok':u.state===99?'tb-err':'tb-warn';
+      h+='<div class="truck" onclick="openUnit(\''+u.id+'\',\''+u.name+'\',\''+u.type+'\','+(u.plates||1)+')"><div class="tn">'+u.name+'</div><div class="ti">'+u.type+' &bull; '+(u.plates||1)+' plates &bull; '+S[u.state]+'</div><div class="tr"><span class="tv">'+(u.t_box?u.t_box.toFixed(1):'--')+'°</span><span class="tb '+bc+'">'+S[u.state]+'</span></div></div>';
+    });
+    fleetList.innerHTML=h||'<div class="loading">No units</div>';
+  }).catch(function(){fleetList.innerHTML='<div class="loading">Server offline</div>'});
+}
+
+function openUnit(id,name,type,plates){
+  mainView.className='hidden';detailView.className='';
+  fetch(A+'/api/truck/latest?id='+id).then(function(r){return r.json()}).then(function(d){
+    fetch(A+'/api/alarms?truck='+id,{headers:{'Authorization':'Bearer '+T}}).then(function(r){return r.json()}).then(function(alarms){
+      var soc=Math.round(d.plate_soc||0),rpm=d.engine_rpm||0,fuel=d.fuel_saved||0,amb=d.ambient||42;
+      var box=d.t_box?d.t_box.toFixed(1):'--',plate=d.t_plate?d.t_plate.toFixed(1):'--';
+      var on=rpm>0;
+      var h='<h3>'+name+'</h3><div class="meta">'+type+' &bull; '+plates+' plates &bull; '+id+'</div>';
+      h+='<div class="hero">'+box+'°C</div><div class="hsub">Target -18°C &bull; '+S[d.state]+'</div>';
+
+      if(type==='SRAYAN'){
+        h+='<div class="gauges"><div class="gauge"><div class="gl">Plate</div><div class="gv" style="color:var(--cy)">'+plate+'</div><div class="gbar"><div class="fill f-b" style="width:'+soc+'%"></div></div><div class="gs">SOC '+soc+'%</div></div><div class="gauge"><div class="gl">Diesel</div><div class="gv" style="color:'+(on?'var(--or)':'var(--mu)')+'">'+(on?Math.round(rpm):0)+'</div><div class="gs">RPM (850~1450)</div></div><div class="gauge"><div class="gl">Compressor</div><div class="gv" style="color:'+(on?'var(--or)':'var(--mu)')+'">'+(on?'LOAD':'OFF')+'</div><div class="gs">'+(on?'98°C':'Standby')+'</div></div></div>';
+        h+='<div class="gauges"><div class="gauge"><div class="gl">Flow</div><div class="gv" style="font-size:15px;color:var(--cy)">'+(on?55:0)+'</div><div class="gs">L/min</div></div><div class="gauge"><div class="gl">Fuel Saved</div><div class="gv" style="font-size:15px;color:var(--gr)">'+Math.round(fuel)+'</div><div class="gs">Liters</div></div><div class="gauge"><div class="gl">Ambient</div><div class="gv" style="font-size:15px">'+Math.round(amb)+'°C</div></div></div>';
+        h+='<div class="infobox"><div class="ibt">Coil & Pumps</div><div class="ibrow"><span>In</span><b>-19°C</b><span>Out</span><b>-17°C</b><span>ΔT</span><b style="color:var(--cy)">2K</b></div><div class="ibrow"><span>Flow</span><b>'+(on?25:45)+' L/min</b><span>Fans</span><b>'+(on?20:60)+'%</b><span>Icing</span><b style="color:var(--gr)">NO</b></div><div class="ibrow"><span>Main Pump</span><b>'+(on?70:0)+'%</b><span>Coil Pump</span><b>'+(on?25:50)+'%</b><span>Titan</span><b style="color:var(--gr)">SEALED</b></div></div>';
+      } else if(type==='TRICORA'){
+        h+='<div class="gauges"><div class="gauge"><div class="gl">Plates Avg</div><div class="gv" style="color:var(--gr)">'+plate+'</div><div class="gbar"><div class="fill f-g" style="width:'+soc+'%"></div></div><div class="gs">SOC '+soc+'%</div></div><div class="gauge"><div class="gl">Autonomy</div><div class="gv" style="color:var(--gr)">'+(soc>0?(soc*0.25).toFixed(1):'0')+'h</div><div class="gs">Remaining</div></div><div class="gauge"><div class="gl">Energy</div><div class="gv" style="font-size:15px">'+(plates*1.1*soc/100).toFixed(1)+'</div><div class="gs">kWh &bull; Cassette B</div></div></div>';
+        h+='<div class="infobox"><div class="ibt">'+plates+' Plates</div><div class="plate-grid">';
+        for(var i=0;i<plates;i++){var pt=parseFloat(plate)-Math.random()*6+Math.random()*3;h+='<div class="pc"><div class="pn">#'+(i+1)+'</div><div class="pv" style="color:'+(pt<-28?'var(--cy)':pt<-15?'var(--or)':'var(--re)')+'">'+pt.toFixed(1)+'°C</div></div>'}
+        h+='</div></div>';
+      } else if(type==='TITAN'){
+        h+='<div class="gauges"><div class="gauge"><div class="gl">Supply</div><div class="gv" style="color:var(--pu)">-42°C</div></div><div class="gauge"><div class="gl">Flow Max</div><div class="gv" style="color:var(--cy)">100</div><div class="gs">L/min</div></div><div class="gauge"><div class="gl">Sessions</div><div class="gv" style="font-size:15px">1,247</div></div></div>';
+      } else if(type==='STATIC'){
+        h+='<div class="gauges"><div class="gauge"><div class="gl">Room</div><div class="gv" style="color:var(--gr)">'+box+'</div></div><div class="gauge"><div class="gl">Tank</div><div class="gv" style="color:var(--cy)">'+plate+'</div><div class="gbar"><div class="fill f-b" style="width:'+soc+'%"></div></div><div class="gs">SOC '+soc+'%</div></div><div class="gauge"><div class="gl">Power</div><div class="gv" style="font-size:15px;color:var(--gr)">10 HP</div></div></div>';
+      } else {
+        h+='<div class="gauges"><div class="gauge"><div class="gl">Box</div><div class="gv" style="color:var(--gr)">'+box+'</div></div><div class="gauge"><div class="gl">Plate</div><div class="gv" style="color:var(--cy)">'+plate+'</div><div class="gbar"><div class="fill f-b" style="width:'+soc+'%"></div></div><div class="gs">SOC '+soc+'%</div></div><div class="gauge"><div class="gl">Ambient</div><div class="gv" style="font-size:15px">'+Math.round(amb)+'°C</div></div></div>';
       }
-      var t = trucks[count-1];
-      fetch(API + '/api/truck/latest?id=' + t.id).then(function(r){ return r.json() }).then(function(data){
-        var states = {0:'INIT',1:'IDLE',2:'CHARGING',3:'COOLING',4:'DEFROST',5:'TITAN',99:'ERROR'};
-        var bc = data.state==3?'ok':(data.state==99?'err':'warn');
-        var tv = data.t_box ? data.t_box.toFixed(1) : '--.-';
-        html += '<div class="truck-card" onclick="showDetail(\''+t.id+'\',\''+t.name+'\')">'+
-          '<div class="tname">'+t.name+'</div>'+
-          '<div class="tinfo">'+t.type+' / '+t.plates+' plates</div>'+
-          '<div class="trow"><div><span class="ttemp">'+tv+'</span> <span style="font-size:11px;color:#8D99AE">C</span></div>'+
-          '<span class="tbadge '+bc+'">'+states[data.state]+'</span></div></div>';
-        addCard();
-      }).catch(function(){ addCard() });
-    }
-    addCard();
-  }).catch(function(e){
-    document.getElementById('truckList').innerHTML = '<div class="loading">Server offline</div>';
+
+      if(alarms&&alarms.length){
+        h+='<div class="infobox"><div class="ibt">Alarms</div>';
+        alarms.forEach(function(a){var c=a.level==='critical'?'var(--re)':a.level==='warning'?'var(--or)':'var(--gr)';h+='<div class="alarm-item"><span class="alarm-dot" style="background:'+c+'"></span>'+a.timestamp+' — '+a.message+'</div>'});
+        h+='</div>';
+      }
+      detailContent.innerHTML=h;
+    });
   });
 }
-
-function showDashboard(){
-  document.getElementById('dashboard').classList.add('active');
-  document.getElementById('detailView').classList.remove('active');
-  loadTrucks();
-}
-
-function showDetail(id, name){
-  document.getElementById('dashboard').classList.remove('active');
-  document.getElementById('detailView').classList.add('active');
-  document.getElementById('dtName').textContent = name;
-  fetch(API + '/api/truck/latest?id=' + id).then(function(r){ return r.json() }).then(function(data){
-    var states = {0:'INIT',1:'IDLE',2:'CHARGING',3:'COOLING',4:'DEFROST',5:'TITAN',99:'ERROR'};
-    document.getElementById('dtTemp').textContent = data.t_box ? data.t_box.toFixed(1) : '--.-';
-    document.getElementById('dtPlate').textContent = data.t_plate ? data.t_plate.toFixed(1) : '--.-';
-    document.getElementById('dtSOC').textContent = data.plate_soc ? Math.round(data.plate_soc)+'%' : '--';
-    // Tricora shows plates + autonomy, Saryan shows engine RPM + fuel
-    document.getElementById('dtEngine').textContent = data.type==='TRICORA' ? (data.plate_count||'?')+' Plates' : (data.engine_rpm > 0 ? data.engine_rpm+' RPM' : 'OFF');
-    document.getElementById('dtFuel').textContent = data.type==='TRICORA' ? (data.autonomy||'--')+' hrs' : (data.fuel_saved ? data.fuel_saved.toFixed(0)+' L' : '--');
-    document.getElementById('dtAmb').textContent = data.ambient ? data.ambient.toFixed(0)+'C' : '--';
-    document.getElementById('dtStatus').textContent = states[data.state]||'?';
-  });
-}
-
-function logout(){
-  localStorage.removeItem('nabd_token');
-  localStorage.removeItem('nabd_user');
-  document.getElementById('dashboard').classList.remove('active');
-  document.getElementById('detailView').classList.remove('active');
-  document.getElementById('loginBox').classList.add('active');
-}
-
-// Check if already logged in
-var savedToken = localStorage.getItem('nabd_token');
-if (savedToken) {
-  document.getElementById('loginBox').classList.remove('active');
-  document.getElementById('dashboard').classList.add('active');
-  document.getElementById('userName').textContent = (localStorage.getItem('nabd_user')||'User') + ' Fleet';
-  loadTrucks();
-}
-
-// Auto-refresh dashboard
-setInterval(function(){
-  if (document.getElementById('dashboard').classList.contains('active')) loadTrucks();
-}, 10000);
+function goBack(){detailView.className='hidden';mainView.className='';load()}
+function logout(){localStorage.clear();location.reload()}
 </script>
 </body>
 </html>
