@@ -1,1 +1,8 @@
-# Built-in modules only � no pip install needed
+# VROX Nabd — Python Dependencies
+# Install: pip install -r requirements.txt
+
+# Desktop App (optional — for native Windows application)
+pywebview>=5.0
+
+# All other modules are Python built-ins:
+# http.server, json, sqlite3, hashlib, secrets, time, os, urllib
