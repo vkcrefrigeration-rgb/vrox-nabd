@@ -1,0 +1,427 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=1024,height=600">
+<title>VROX SRAYAN — Nabd Control</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0A0E17;color:#EDF2F4;display:flex;justify-content:center;align-items:center;min-height:100vh;user-select:none;overflow:hidden}
+.screen{width:1024px;height:600px;background:#0A0E17;position:relative;overflow:hidden}
+.tb{height:34px;background:#141B2D;border-bottom:1px solid #2B2D42;display:flex;align-items:center;padding:0 14px}
+.tb .br{font-weight:800;font-size:14px;color:#00B4D8}
+.tb .badge{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;margin-left:auto;margin-right:10px;border:1px solid rgba(0,180,216,0.25);background:rgba(0,180,216,0.12);color:#48CAE4}
+.tb .clk{font-size:12px;color:#8D99AE}
+.pg{position:absolute;top:34px;left:0;right:0;bottom:48px;display:none;padding:10px 14px;overflow-y:auto}
+.pg.on{display:block}
+.nv{position:absolute;bottom:0;left:0;right:0;height:48px;background:#141B2D;border-top:1px solid #2B2D42;display:flex}
+.nv button{flex:1;border:none;background:transparent;color:#8D99AE;font-size:11px;font-weight:600;font-family:inherit;cursor:pointer;border-top:2px solid transparent;transition:0.2s}
+.nv button.on{color:#00B4D8;border-top-color:#00B4D8}
+.ib{position:absolute;bottom:48px;left:0;right:0;height:15px;background:rgba(10,14,23,0.95);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:9px;color:#3B3D52}
+.g{color:#2EC4B6}.w{color:#F4A261}.r{color:#E63946}.b{color:#00B4D8}.p{color:#9B5DE5}
+
+/* Hero Row */
+.hero-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.hero-ring{width:150px;height:150px;border-radius:50%;background:radial-gradient(circle,rgba(26,39,68,0.9)0%,rgba(10,14,23,0)75%);border:2px solid rgba(43,45,66,0.6);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.hero-temp{font-size:52px;font-weight:900;color:#00B4D8;line-height:1}
+.hero-unit{font-size:13px;color:#8D99AE}
+.hero-info{flex:1;font-size:12px;color:#8D99AE;line-height:1.8}
+.hero-info b{color:#EDF2F4}
+.hero-status{font-size:12px;font-weight:600}
+
+/* Stat mini cards next to hero */
+.stat-row{display:flex;gap:8px;flex:2.5}
+.stat{flex:1;background:linear-gradient(180deg,#141B2D,#0D1321);border:1px solid #2B2D42;border-radius:8px;padding:8px 10px;text-align:center;display:flex;flex-direction:column;justify-content:center}
+.stat .sl{font-size:9px;font-weight:700;color:#8D99AE;text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.stat .sv{font-size:20px;font-weight:700;color:#EDF2F4;line-height:1.2}
+.stat .ss{font-size:9px;color:#8D99AE;margin-top:2px}
+.stat .bar{background:rgba(43,45,66,0.6);border-radius:3px;height:4px;margin-top:4px;overflow:hidden}
+.stat .bar .fill{height:100%;border-radius:3px;transition:width 0.5s}
+.bu{background:linear-gradient(90deg,#00B4D8,#48CAE4)}.bg{background:linear-gradient(90deg,#2EC4B6,#48CAE4)}.bo{background:linear-gradient(90deg,#F4A261,#E76F51)}
+
+/* Cards Row */
+.cards-row{display:flex;gap:8px;margin-top:6px}
+.card{flex:1;background:linear-gradient(180deg,#141B2D,#0D1321);border:1px solid #2B2D42;border-radius:8px;padding:10px 12px;position:relative}
+.card::after{content:'';position:absolute;top:0;left:10px;right:10px;height:1px;background:rgba(26,39,68,0.5)}
+.card-title{font-size:10px;font-weight:700;color:#8D99AE;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.card-val{font-size:20px;font-weight:700;color:#EDF2F4;line-height:1.2}
+.card-sub{font-size:10px;color:#8D99AE;margin-top:2px}
+.card-row{display:flex;justify-content:space-between;font-size:11px;color:#8D99AE;margin-top:5px}
+.card-row b{color:#EDF2F4}
+.card .bar{background:rgba(43,45,66,0.6);border-radius:3px;height:4px;margin-top:4px;overflow:hidden}
+.card .bar .fill{height:100%;border-radius:3px;transition:width 0.5s}
+
+/* Animated indicators inside cards */
+.dot-ind{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+.dot-ind.g{background:#2EC4B6;box-shadow:0 0 6px #2EC4B6}
+.dot-ind.w{background:#F4A261}
+.dot-ind.r{background:#E63946}
+.dot-ind.off{background:#2B2D42}
+
+.fan-icon{display:inline-block;width:18px;height:18px;position:relative;vertical-align:middle;margin-right:3px}
+.fan-icon .bld{position:absolute;width:2px;height:8px;background:#48CAE4;border-radius:1px;top:5px;left:8px;transform-origin:center}
+.fan-icon .bld:nth-child(1){transform:rotate(0deg) translateY(-4px)}
+.fan-icon .bld:nth-child(2){transform:rotate(120deg) translateY(-4px)}
+.fan-icon .bld:nth-child(3){transform:rotate(240deg) translateY(-4px)}
+.fan-icon.spin{animation:spin 0.6s linear infinite}
+@keyframes spin{100%{transform:rotate(360deg)}}
+
+/* Settings */
+.set-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.set-card{background:linear-gradient(180deg,#141B2D,#0D1321);border:1px solid #2B2D42;border-radius:8px;padding:12px 14px}
+.set-card h3{font-size:12px;font-weight:700;color:#8D99AE;margin-bottom:8px;border-bottom:1px solid #2B2D42;padding-bottom:5px}
+.set-row{display:flex;justify-content:space-between;font-size:11px;color:#EDF2F4;margin-bottom:4px}
+.set-row span:first-child{color:#8D99AE}.val{color:#00B4D8;font-weight:600}
+
+/* Controls */
+.btn-up{display:inline-block;width:32px;height:32px;line-height:32px;text-align:center;background:#141B2D;border:1px solid #2B2D42;border-radius:6px;color:#EDF2F4;font-size:18px;font-weight:700;cursor:pointer;margin:0 4px}
+.btn-sm{display:inline-block;padding:6px 18px;border-radius:10px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid rgba(230,57,70,0.25);background:rgba(230,57,70,0.1);color:#E63946}
+.ctrl-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ctrl-card{background:linear-gradient(180deg,#141B2D,#0D1321);border:1px solid #2B2D42;border-radius:8px;padding:12px 14px}
+.ctrl-card h3{font-size:12px;font-weight:700;color:#8D99AE;margin-bottom:8px;border-bottom:1px solid #2B2D42;padding-bottom:5px}
+.ctrl-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:11px;color:#EDF2F4}
+.ctrl-val{font-size:20px;font-weight:700;color:#00B4D8}.ctrl-btns{display:flex;align-items:center;gap:6px}
+.preset{display:inline-block;padding:4px 10px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer;margin:2px;border:1px solid #2B2D42;background:#141B2D;color:#8D99AE}
+.preset.sel{border-color:#00B4D8;color:#00B4D8;background:rgba(0,180,216,0.12)}
+.tgl{display:inline-block;padding:5px 16px;border-radius:16px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #2B2D42;background:#141B2D;color:#8D99AE}
+.tgl.on{background:rgba(46,196,182,0.15);border-color:rgba(46,196,182,0.3);color:#2EC4B6}
+
+/* Charge */
+.ch{text-align:center;padding-top:15px}
+.chr{width:140px;height:140px;border-radius:50%;margin:0 auto;background:radial-gradient(circle,rgba(26,39,68,0.9)0%,rgba(10,14,23,0)75%);border:2px solid rgba(155,93,229,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(155,93,229,0.3)}70%{box-shadow:0 0 0 18px rgba(155,93,229,0)}100%{box-shadow:0 0 0 0 rgba(155,93,229,0)}}
+.cht{font-size:48px;font-weight:900;color:#9B5DE5}
+.chb{width:420px;height:8px;background:rgba(43,45,66,0.6);border-radius:4px;overflow:hidden;margin:14px auto}
+.ci{display:flex;justify-content:center;gap:30px;margin-top:12px;font-size:13px;color:#8D99AE}.ci span{color:#EDF2F4;font-weight:600}
+
+.pg::-webkit-scrollbar{width:4px}.pg::-webkit-scrollbar-thumb{background:#2B2D42;border-radius:2px}
+/* Startup overlay */
+.startup{position:absolute;top:0;left:0;right:0;bottom:0;background:#0A0E17;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100}
+.startup.hidden{display:none}
+.startup h1{font-size:26px;font-weight:900;color:#EDF2F4;letter-spacing:2px}
+.startup .ver{font-size:11px;color:#8D99AE;margin-bottom:24px}
+.startup .loading{width:320px;margin-bottom:20px}
+.startup .check-item{display:flex;align-items:center;gap:10px;width:320px;padding:5px 0;font-size:11px;color:#5A5F6E;border-bottom:1px solid rgba(43,45,66,0.4)}
+.startup .check-item .icon{width:18px;font-size:12px;text-align:center}
+.startup .check-item .icon.ok{color:#2EC4B6}.startup .check-item .icon.wait{color:#5A5F6E}.startup .check-item .icon.fail{color:#E63946}
+.startup .check-item .name{flex:1}
+.startup .check-item .status{font-size:10px;width:60px;text-align:right}
+.startup .progress-bar{width:320px;height:4px;background:rgba(43,45,66,0.5);border-radius:2px;overflow:hidden;margin-bottom:16px}
+.startup .progress-bar .fill{height:100%;border-radius:2px;background:linear-gradient(90deg,#00B4D8,#48CAE4);transition:width 0.3s}
+.startup .boot-msg{font-size:13px;font-weight:600;color:#EDF2F4;margin-top:12px}
+.startup .boot-btn{width:140px;height:140px;border-radius:50%;border:3px solid rgba(46,196,182,0.3);background:rgba(46,196,182,0.06);color:#2EC4B6;font-size:18px;font-weight:800;font-family:inherit;cursor:pointer;transition:0.3s;display:none;align-items:center;justify-content:center;margin-top:12px}
+.startup .boot-btn.show{display:flex}
+.startup .boot-btn:hover{background:rgba(46,196,182,0.15);border-color:#2EC4B6;box-shadow:0 0 30px rgba(46,196,182,0.2)}
+.pwr2{width:56px;height:28px;border-radius:14px;border:1px solid #2B2D42;background:#141B2D;cursor:pointer;transition:0.3s;flex-shrink:0;margin-left:10px;display:flex;align-items:center;padding:0 4px;font-size:8px;font-weight:700;color:#5A5F6E;justify-content:flex-start}
+.pwr2::after{content:'OFF';min-width:20px;height:20px;border-radius:50%;background:#E63946;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:#0A0E17;transition:0.3s;box-shadow:0 0 4px rgba(230,57,70,0.3)}
+.pwr2.on{background:rgba(46,196,182,0.1);border-color:rgba(46,196,182,0.4);justify-content:flex-end}
+.pwr2.on::after{content:'ON';background:#2EC4B6;color:#0A0E17;box-shadow:0 0 8px rgba(46,196,182,0.5)}
+</style>
+</head>
+<body>
+<div class="screen">
+
+<div class="tb"><span class="br">SRAYAN</span><span class="badge" id="badge">OFF</span><span class="clk" id="clock"></span><span class="pwr2 off" id="pwrBtn" onclick="togglePower()" title="ON/OFF"></span></div>
+
+<!-- STARTUP SCREEN -->
+<div class="startup" id="startup">
+  <h1>VROX SRAYAN</h1>
+  <div class="ver">Nabd Control System v1.0</div>
+  <div class="progress-bar"><div class="fill" id="bootProgress" style="width:0%"></div></div>
+  <div id="bootChecks">
+    <div class="check-item" id="chk1"><span class="icon wait">&#9679;</span><span class="name">PLC Communication</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+    <div class="check-item" id="chk2"><span class="icon wait">&#9679;</span><span class="name">Temperature Sensors</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+    <div class="check-item" id="chk3"><span class="icon wait">&#9679;</span><span class="name">Pressure Sensors</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+    <div class="check-item" id="chk4"><span class="icon wait">&#9679;</span><span class="name">Engine &amp; Compressor</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+    <div class="check-item" id="chk5"><span class="icon wait">&#9679;</span><span class="name">Pumps &amp; Circulation</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+    <div class="check-item" id="chk6"><span class="icon wait">&#9679;</span><span class="name">Plate Vacuum Seal</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+    <div class="check-item" id="chk7"><span class="icon wait">&#9679;</span><span class="name">KCOOH Level &amp; Quality</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+    <div class="check-item" id="chk8"><span class="icon wait">&#9679;</span><span class="name">Titan Port Ready</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+    <div class="check-item" id="chk9"><span class="icon wait">&#9679;</span><span class="name">HMI Display</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+    <div class="check-item" id="chk10"><span class="icon wait">&#9679;</span><span class="name">Cloud Connection</span><span class="status" style="color:#5A5F6E">WAIT</span></div>
+  </div>
+  <div class="boot-msg" id="bootMsg">Initializing...</div>
+  <button class="boot-btn" id="bootBtn" onclick="startSystem()">START</button>
+</div>
+
+<!-- MAIN -->
+<div class="pg on" id="main">
+
+  <!-- HERO ROW -->
+  <div class="hero-row">
+    <div class="hero-ring"><span class="hero-temp" id="boxTemp">-16.8</span><span class="hero-unit">&deg;C</span></div>
+    <div class="hero-info">
+      <div>Target: <b id="targetTemp">-18.0</b>&deg;C &nbsp;|&nbsp; <span class="hero-status g" id="statusLine">within range</span></div>
+      <div>Off-Cycle: <b id="offMin">128</b> min &nbsp;|&nbsp; Ambient: <b id="ambTemp">42</b>&deg;C</div>
+      <div>Fuel Saved: <b id="fuelSaved" class="g">128</b> L &nbsp;|&nbsp; SRAYAN Flow: <b id="SRAYANFlowMain" class="b">0</b> L/min</div>
+      <div>Coolant: <b class="p">KCOOH+KAc 35/20</b> &nbsp;|&nbsp; Eutectic: <b class="r">-48&deg;C</b></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="sl">PLATE</div><div class="sv" id="plateTemp" style="font-size:18px">-22.4</div><div class="bar"><div class="fill bu" id="plateBar" style="width:65%"></div></div><div class="ss">SOC <b id="plateSOC">65</b>%</div></div>
+      <div class="stat"><div class="sl">DIESEL</div><div class="sv" id="dieselRPM" style="font-size:22px;color:#8D99AE">0</div><div class="ss">RPM (850~1450) &nbsp; <span id="dieselStatus">OFF</span></div></div>
+      <div class="stat"><div class="sl">COMPRESSOR</div><div class="sv" id="compState" style="font-size:16px;color:#8D99AE">OFF</div><div class="ss">T: <b id="dischTemp">--</b>&deg;C</div></div>
+      <div class="stat"><div class="sl">MODE</div><div class="sv" id="coolMode" style="font-size:15px;color:#48CAE4">IDLE</div><div class="ss">KCOOH+KAc</div></div>
+    </div>
+  </div>
+
+  <!-- CARDS ROW 1 -->
+  <div class="cards-row">
+    <div class="card">
+      <div class="card-title">COIL &amp; EVAPORATOR FANS</div>
+      <div class="card-row"><span>Coil In</span><b id="coilIn">-19.0</b><span>&deg;C</span><span>Coil Out</span><b id="coilOut">-17.0</b><span>&deg;C</span><span>&Delta;T</span><b id="coilDT" class="b">2.0</b><span>K</span></div>
+      <div class="card-row"><span>Flow</span><b id="coilFlow">45</b><span>L/min</span><span>Icing</span><b id="icing" class="g">NO</b></div>
+      <div class="card-row" style="margin-top:6px">
+        <span><span class="fan-icon" id="f1"><div class="bld"></div><div class="bld"></div><div class="bld"></div></span> Fan 1: <b id="fan1v">0</b>%</span>
+        <span><span class="fan-icon" id="f2"><div class="bld"></div><div class="bld"></div><div class="bld"></div></span> Fan 2: <b id="fan2v">0</b>%</span>
+        <span><span class="fan-icon" id="f3"><div class="bld"></div><div class="bld"></div><div class="bld"></div></span> Fan 3: <b id="fan3v">0</b>%</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">PUMPS &amp; TITAN PORT</div>
+      <div class="card-row"><span>Main Pump</span><b id="pumpMain">0</b><span>%</span><span class="dot-ind" id="pmDot" style="background:#2B2D42"></span></div>
+      <div class="card-row"><span>Standby Pump</span><b id="pumpStby" class="g">READY</b><span class="dot-ind g"></span></div>
+      <div class="card-row"><span>Coil Pump</span><b id="pumpCoil">0</b><span>%</span><span class="dot-ind" id="pcDot" style="background:#2B2D42"></span></div>
+      <div class="card-row"><span>Titan Port</span><b id="titanPort" class="g">SEALED</b><span class="dot-ind" id="tpDot" style="background:#2B2D42"></span></div>
+      <div class="card-row"><span>Defrost</span><b id="defrostStatus" class="g">OFF</b></div>
+    </div>
+    <div class="card">
+      <div class="card-title">REFRIGERATION CIRCUIT</div>
+      <div class="card-row"><span>Suction</span><b id="pSuction">--</b><span>bar</span><span>Discharge</span><b id="pDischarge">--</b><span>bar</span></div>
+      <div class="card-row"><span>Superheat</span><b id="shActual" class="b">--</b><span>K</span><span>EEV</span><b id="eevPos">--</b><span>%</span></div>
+      <div class="card-row"><span>Condenser Fan</span><b id="condFan">0</b><span>%</span><span>Discharge T</span><b id="dischTemp2">--</b><span>&deg;C</span></div>
+    </div>
+  </div>
+
+  <!-- CARDS ROW 2 -->
+  <div class="cards-row" style="margin-top:6px">
+    <div class="card">
+      <div class="card-title">BATTERY &amp; SOLAR</div>
+      <div class="card-row"><span>Battery SOC</span><b id="batSOC">82</b><span>%</span></div>
+      <div class="bar"><div class="fill bg" id="batBar" style="width:82%"></div></div>
+      <div class="card-row"><span>Solar Power</span><b id="solarW">320</b><span>W</span><span>Voltage</span><b id="batVolt">26.4</b><span>V</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">FUEL &amp; SAVINGS</div>
+      <div class="card-row"><span>Fuel Level</span><b id="fuelPct">68</b><span>%</span></div>
+      <div class="bar"><div class="fill bo" id="fuelBar" style="width:68%"></div></div>
+      <div class="card-row"><span>Saved Today</span><b id="fuelSaved2" class="g">128</b><span>L</span><span>Total</span><b class="g">4,210</b><span>L</span></div>
+    </div>
+    <div class="card">
+      <div class="card-title">SYSTEM STATUS</div>
+      <div class="card-row"><span>Cycles</span><b id="totalCycles">12,847</b><span>Hours</span><b id="runHours">8,742</b></div>
+      <div class="card-row"><span>Coolant</span><b class="p">KCOOH+KAc 35/20</b></div>
+      <div class="card-row"><span>PLC</span><b>TM241CE40T</b><span>Firmware</span><b>V4.2.1</b></div>
+    </div>
+  </div>
+</div>
+
+<!-- Other pages (compact) -->
+<div class="pg" id="charge">
+  <div class="ch"><div style="font-size:18px;font-weight:700;color:#EDF2F4;margin-bottom:10px">TITAN CHARGING</div>
+  <div class="chr pulse"><div class="cht" id="chTemp">-28</div><div style="font-size:12px;color:#8D99AE">&deg;C</div></div></div>
+  <div class="chb"><div class="fill bu" id="chFill" style="width:65%"></div></div>
+  <div style="text-align:center;font-size:22px;font-weight:700;color:#9B5DE5;margin-top:8px" id="chPct">65%</div>
+  <div class="ci"><div>Flow: <span id="chFlow">60</span> L/min</div><div>Energy: <span id="chEnergy">12.8</span> kWh</div><div>Remaining: <span id="chRemain">6</span> min</div></div>
+  <div style="text-align:center;margin-top:12px"><span class="btn-sm">STOP CHARGE</span></div>
+</div>
+
+<div class="pg" id="alarms">
+  <div style="font-size:16px;font-weight:700;color:#EDF2F4;margin-bottom:10px">Alarms</div>
+  <div style="display:flex;flex-direction:column;gap:5px">
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#141B2D;border:1px solid #2B2D42;border-radius:6px"><span class="g">&#10003;</span><span style="font-size:10px;color:#8D99AE;width:45px">14:32</span><span style="flex:1;font-size:12px">F01 Box Temp High — Resolved</span><span class="g">OK</span></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#141B2D;border:1px solid #2B2D42;border-radius:6px"><span class="w">&#9888;</span><span style="font-size:10px;color:#8D99AE;width:45px">11:00</span><span style="flex:1;font-size:12px">F11 Vacuum Warning — Check Schrader</span><span class="w">PENDING</span></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#141B2D;border:1px solid #2B2D42;border-radius:6px"><span class="g">&#10003;</span><span style="font-size:10px;color:#8D99AE;width:45px">09:15</span><span style="flex:1;font-size:12px">F17 Door Open — Closed OK</span><span class="g">OK</span></div>
+  </div>
+</div>
+
+<div class="pg" id="settings">
+  <div class="set-grid">
+    <div class="set-card"><h3>TEMPERATURE</h3><div class="set-row"><span>Box Target</span><span class="val">-18.0&deg;C</span></div><div class="set-row"><span>Plate Target</span><span class="val">-40.0&deg;C</span></div><div class="set-row"><span>Max Discharge</span><span class="val">110&deg;C</span></div><div class="set-row"><span>SH Setpoint</span><span class="val">4.0K</span></div></div>
+    <div class="set-card"><h3>DEFROST</h3><div class="set-row"><span>Schedule</span><span class="val">8 hrs</span></div><div class="set-row"><span>Duration</span><span class="val">6 min</span></div><div class="set-row"><span>dP Trigger</span><span class="val">150%</span></div><div class="set-row"><span>Exit Temp</span><span class="val">+5&deg;C</span></div></div>
+    <div class="set-card"><h3>ENGINE</h3><div class="set-row"><span>Governor Range</span><span class="val">850~1450 RPM</span></div><div class="set-row"><span>Idle (0V)</span><span class="val">850 RPM</span></div><div class="set-row"><span>Full (5V)</span><span class="val">1450 RPM</span></div><div class="set-row"><span>Auto Start</span><span class="val g">ON</span></div></div>
+    <div class="set-card"><h3>PUMPS</h3><div class="set-row"><span>Main Max</span><span class="val">80%</span></div><div class="set-row"><span>Coil Max</span><span class="val">80%</span></div><div class="set-row"><span>Min Flow</span><span class="val">20 L/m</span></div><div class="set-row"><span>Standby</span><span class="val g">AUTO</span></div></div>
+    <div class="set-card"><h3>NETWORK</h3><div class="set-row"><span>SRAYAN PLC</span><span class="val">192.168.1.10</span></div><div class="set-row"><span>HMI</span><span class="val">192.168.1.20</span></div><div class="set-row"><span>Titan</span><span class="val">192.168.1.30</span></div><div class="set-row"><span>Cloud</span><span class="val g">ONLINE</span></div></div>
+    <div class="set-card"><h3>COOLANT</h3><div class="set-row"><span>Type</span><span class="val" style="color:#9B5DE5">KCOOH+KAc</span></div><div class="set-row"><span>Eutectic</span><span class="val" style="color:#E63946">-48&deg;C</span></div><div class="set-row"><span>Safe Limit</span><span class="val g">-45&deg;C</span></div><div class="set-row"><span>Operation</span><span class="val">-42&deg;C</span></div></div>
+  </div>
+</div>
+
+<div class="pg" id="controls">
+  <div style="font-size:16px;font-weight:700;color:#EDF2F4;margin-bottom:8px">Controls</div>
+  <div class="ctrl-grid">
+    <div class="ctrl-card"><h3>TEMPERATURE</h3><div style="text-align:center;font-size:52px;font-weight:900;color:#00B4D8" id="ctrlBoxTemp">-16.8</div><div style="text-align:center;font-size:12px;color:#8D99AE;margin-bottom:10px">&deg;C Current</div>
+    <div class="ctrl-row"><span>Target</span><div class="ctrl-btns"><span class="btn-up" onclick="adjTarget(-0.5)">-</span><span class="ctrl-val" id="ctrlTarget">-18.0</span><span class="btn-up" onclick="adjTarget(+0.5)">+</span></div><span>&deg;C</span></div></div>
+    <div class="ctrl-card"><h3>DEFROST</h3><div class="ctrl-row"><span>Schedule</span><div class="ctrl-btns"><span class="btn-up" onclick="adjDefrostSchd(-1)">-</span><span class="ctrl-val" id="defSchd" style="font-size:16px">8</span><span class="btn-up" onclick="adjDefrostSchd(+1)">+</span></div><span>hrs</span></div>
+    <div class="ctrl-row"><span>Duration</span><div class="ctrl-btns"><span class="btn-up" onclick="adjDefrostDur(-1)">-</span><span class="ctrl-val" id="defDur" style="font-size:16px">6</span><span class="btn-up" onclick="adjDefrostDur(+1)">+</span></div><span>min</span></div>
+    <span class="btn-sm" style="color:#F4A261;border-color:rgba(244,162,97,0.3);background:rgba(244,162,97,0.1)" onclick="forceDefrost()">START DEFROST</span></div>
+    <div class="ctrl-card"><h3>ENGINE</h3><div class="ctrl-row"><span>Auto Start</span><span class="tgl on" id="tglAuto" onclick="tgl(this)">ON</span></div>
+    <span class="btn-sm" style="color:#2EC4B6;border-color:rgba(46,196,182,0.3);background:rgba(46,196,182,0.1);margin-top:4px" onclick="forceEngineOn()">START ENGINE</span>
+    <span class="btn-sm" style="margin-left:6px" onclick="forceEngineOff()">STOP ENGINE</span></div>
+  </div>
+</div>
+
+<div class="pg" id="trends"><div style="font-size:16px;font-weight:700;color:#EDF2F4;margin-bottom:8px">Trends</div><canvas id="trendCanvas" style="width:100%;height:350px;background:#141B2D;border:1px solid #2B2D42;border-radius:8px"></canvas></div>
+
+<div class="nv">
+  <button class="on" onclick="go('main',this)">MAIN</button>
+  <button onclick="go('charge',this)">CHARGE</button>
+  <button onclick="go('alarms',this)">ALARMS</button>
+  <button onclick="go('settings',this)">SETTINGS</button>
+  <button onclick="go('controls',this)">CONTROLS</button>
+  <button onclick="go('trends',this)">TRENDS</button>
+</div>
+<div class="ib"><span>PLC: <span class="w" id="plcStatus">DEMO</span></span><span>Nabd v1.0 — VROX King — KCOOH+KAc 35/20</span><span>Refresh: <span id="refreshCount">0</span></span></div>
+</div>
+
+<script>
+function go(id,btn){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on')});document.getElementById(id).classList.add('on');document.querySelectorAll('.nv button').forEach(function(b){b.classList.remove('on')});btn.classList.add('on')}
+function bootSequence(){
+  var checks=[
+    {id:'chk1',name:'PLC Communication',delay:800},
+    {id:'chk2',name:'Temperature Sensors',delay:1000},
+    {id:'chk3',name:'Pressure Sensors',delay:700},
+    {id:'chk4',name:'Engine & Compressor',delay:1200},
+    {id:'chk5',name:'Pumps & Circulation',delay:900},
+    {id:'chk6',name:'Plate Vacuum Seal',delay:1100},
+    {id:'chk7',name:'KCOOH Level & Quality',delay:800},
+    {id:'chk8',name:'Titan Port Ready',delay:700},
+    {id:'chk9',name:'HMI Display',delay:600},
+    {id:'chk10',name:'Cloud Connection',delay:1500}
+  ];
+  var totalTime=checks.reduce(function(s,c){return s+c.delay},0);
+  var elapsed=0;
+
+  checks.forEach(function(item,i){
+    setTimeout(function(){
+      var el=document.getElementById(item.id);
+      el.querySelector('.icon').textContent='\u2713';el.querySelector('.icon').className='icon ok';
+      el.querySelector('.status').textContent='OK';el.querySelector('.status').style.color='#2EC4B6';
+      elapsed+=item.delay;
+      document.getElementById('bootProgress').style.width=(elapsed/totalTime*100)+'%';
+      document.getElementById('bootMsg').textContent='Checking '+item.name+'...';
+
+      if(i===checks.length-1){
+        setTimeout(function(){
+          document.getElementById('bootMsg').textContent='All Systems Ready';
+          document.getElementById('bootBtn').classList.add('show');
+          bootDone=true;
+        },400);
+      }
+    },elapsed);
+  });
+  bootRunning=true;
+  document.getElementById('bootProgress').style.width='2%';
+  document.getElementById('bootMsg').textContent='System Boot — Checking...';
+}
+
+var systemOn=false, bootRunning=false, bootDone=false, c=0, dataHistory=[];
+
+function togglePower(){
+  if(systemOn){stopSystem()}else{startSystem()}
+}
+function startSystem(){
+  if(!bootDone){
+    if(!bootRunning) bootSequence();
+    return;
+  }
+  systemOn=true;
+  document.getElementById('pwrBtn').className='pwr2 on';
+  document.getElementById('startup').classList.add('hidden');
+  document.getElementById('badge').textContent='COOLING';
+}
+function stopSystem(){
+  systemOn=false;c=0;forceState=0;forceTimer=0;
+  document.getElementById('pwrBtn').className='pwr2 off';
+  document.getElementById('startup').classList.remove('hidden');
+  document.getElementById('bootBtn').classList.add('show');
+  document.getElementById('bootMsg').textContent='System Stopped — Ready';
+  document.getElementById('badge').textContent='OFF';
+  dataHistory=[];
+}
+function upd(){
+  if(!systemOn)return;
+  c++;var st;if(forceTimer>0){forceTimer--;st=forceState;if(forceTimer===0&&forceState===4){document.getElementById('defrostStatus').textContent='OFF';document.getElementById('defrostStatus').className='g';forceState=0}}else{forceState=0;st=c%700<250?2:c%700<500?3:1};var eng=(st===2),comp=(st===2);
+  var bx=-16.8+Math.sin(c*0.06)*2+(eng?2.5:-1.5);
+  var pl=eng?-30+Math.sin(c*0.03)*3:-22.4+Math.sin(c*0.04)*4;
+  var soc=Math.max(0,Math.min(100,((-5)-pl)/((-5)-(-42))*100));
+  document.getElementById('boxTemp').textContent=bx.toFixed(1);
+  document.getElementById('targetTemp').textContent='-18.0';
+  var sl=document.getElementById('statusLine'),df=Math.abs(bx+18);
+  if(df<1.5){sl.textContent='within range';sl.className='hero-status g'}else if(df<4){sl.textContent='approaching';sl.className='hero-status w'}else{sl.textContent='out of range';sl.className='hero-status r'}
+  document.getElementById('offMin').textContent=Math.round(120+c*0.01);
+  document.getElementById('fuelSaved').textContent=Math.round(128+c*0.005);
+  document.getElementById('fuelSaved2').textContent=Math.round(128+c*0.005);
+  document.getElementById('plateTemp').textContent=pl.toFixed(1);
+  document.getElementById('plateSOC').textContent=Math.round(soc);
+  document.getElementById('plateBar').style.width=soc+'%';
+  document.getElementById('dieselRPM').textContent=eng?Math.round(850+Math.sin(c*0.08)*300):0;
+  document.getElementById('dieselRPM').style.color=eng?'#F4A261':'#8D99AE';
+  document.getElementById('dieselStatus').textContent=eng?'RUNNING':'OFF';
+  document.getElementById('compState').textContent=comp?'LOAD':'OFF';
+  document.getElementById('compState').style.color=comp?'#F4A261':'#8D99AE';
+  document.getElementById('dischTemp').textContent=comp?Math.round(98+Math.sin(c*0.04)*5):'--';
+  document.getElementById('dischTemp2').textContent=comp?Math.round(98+Math.sin(c*0.04)*5):'--';
+  document.getElementById('SRAYANFlowMain').textContent=comp?Math.round(55+Math.sin(c*0.1)*8):0;
+  document.getElementById('coolMode').textContent=st===2?'CHARGING':st===3?'COOLING':'IDLE';
+  document.getElementById('coolMode').style.color=st===2?'#F4A261':st===3?'#48CAE4':'#8D99AE';
+  document.getElementById('ambTemp').textContent=Math.round(42+Math.sin(c*0.02)*4);
+  document.getElementById('badge').textContent={1:'STANDBY',2:'CHARGING',3:'COOLING',4:'DEFROST',5:'TITAN'}[st]||'IDLE';
+  var fs=st===3?Math.round(60+Math.sin(c*0.1)*10):(st===2?20:0);
+  document.getElementById('coilIn').textContent=(-19+Math.sin(c*0.05)*1.5).toFixed(1);
+  document.getElementById('coilOut').textContent=(-17+Math.sin(c*0.05)*1).toFixed(1);
+  document.getElementById('coilDT').textContent=(2+Math.sin(c*0.03)*0.5).toFixed(1);
+  document.getElementById('coilFlow').textContent=Math.round((st===3?45:st===2?15:0)+Math.sin(c*0.07)*2);
+  document.getElementById('fan1v').textContent=fs;document.getElementById('fan2v').textContent=fs;document.getElementById('fan3v').textContent=fs;
+  document.getElementById('f1').className='fan-icon'+(fs>0?' spin':'');document.getElementById('f2').className='fan-icon'+(fs>0?' spin':'');document.getElementById('f3').className='fan-icon'+(fs>0?' spin':'');
+  document.getElementById('icing').textContent='NO';document.getElementById('icing').className='g';
+  document.getElementById('pumpMain').textContent=st===2?70:st===3?50:0;
+  document.getElementById('pumpCoil').textContent=st===3?50:st===2?25:0;
+  document.getElementById('pmDot').style.background=(st===2||st===3)?'#2EC4B6':'#2B2D42';
+  document.getElementById('pcDot').style.background=(st===3||st===2)?'#2EC4B6':'#2B2D42';
+  document.getElementById('titanPort').textContent=st===5?'OPEN':'SEALED';document.getElementById('titanPort').className=st===5?'w':'g';
+  document.getElementById('tpDot').style.background=st===5?'#9B5DE5':'#2B2D42';
+  document.getElementById('defrostStatus').textContent=st===4?'ON':'OFF';document.getElementById('defrostStatus').className=st===4?'w':'g';
+  document.getElementById('pSuction').textContent=comp?(1.3+Math.sin(c*0.05)*0.3).toFixed(1):'--';
+  document.getElementById('pDischarge').textContent=comp?(23.5+Math.sin(c*0.03)*2).toFixed(1):'--';
+  document.getElementById('shActual').textContent=comp?(4.8+Math.sin(c*0.06)*1.5).toFixed(1):'--';
+  document.getElementById('eevPos').textContent=comp?Math.round(54+Math.sin(c*0.05)*10):'--';
+  document.getElementById('condFan').textContent=comp?60:0;
+  document.getElementById('batSOC').textContent=Math.round(82+Math.sin(c*0.03)*6);document.getElementById('batBar').style.width=Math.round(82+Math.sin(c*0.03)*6)+'%';
+  document.getElementById('batVolt').textContent=(26.4+Math.sin(c*0.02)*1.2).toFixed(1);
+  document.getElementById('solarW').textContent=Math.round(320+Math.sin(c*0.12)*150);
+  document.getElementById('fuelPct').textContent=Math.round(68+Math.sin(c*0.02)*3);document.getElementById('fuelBar').style.width=Math.round(68+Math.sin(c*0.02)*3)+'%';
+  document.getElementById('totalCycles').textContent=Math.round(12800+c*0.01);
+  document.getElementById('runHours').textContent=Math.round(8700+c*0.01);
+  document.getElementById('chTemp').textContent=pl.toFixed(0);
+  document.getElementById('chFill').style.width=Math.min(100,soc+15)+'%';
+  document.getElementById('chPct').textContent=Math.round(Math.min(100,soc+15))+'%';
+  document.getElementById('chEnergy').textContent=(soc*0.2).toFixed(1);
+  document.getElementById('chRemain').textContent=Math.round((100-soc)*0.2);
+  document.getElementById('refreshCount').textContent=c;
+  document.getElementById('ctrlBoxTemp').textContent=bx.toFixed(1);
+  dataHistory.push({box:bx,plate:pl,target:-18});if(dataHistory.length>200)dataHistory.shift();
+}
+function drawTrend(){
+  var cnv=document.getElementById('trendCanvas');if(!cnv)return;
+  var ctx=cnv.getContext('2d'),W=cnv.parentElement.clientWidth-40,H=350;
+  cnv.width=W;cnv.height=H;ctx.clearRect(0,0,W,H);ctx.strokeStyle='#1A2744';ctx.lineWidth=1;
+  for(var i=0;i<5;i++){var y=10+i*(H-20)/4;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
+  if(dataHistory.length<2)return;var step=W/dataHistory.length;
+  function line(k,cl){ctx.beginPath();ctx.strokeStyle=cl;ctx.lineWidth=2;for(var i=0;i<dataHistory.length;i++){var x=i*step,y=10+(H-20)*((dataHistory[i][k]+50)/80);if(!i)ctx.moveTo(x,y);else ctx.lineTo(x,y)}ctx.stroke()}
+  line('box','#00B4D8');line('plate','#2EC4B6');
+  ctx.beginPath();ctx.strokeStyle='#E63946';ctx.lineWidth=1;ctx.setLineDash([5,5]);
+  var ty=10+(H-20)*((-18+50)/80);ctx.moveTo(0,ty);ctx.lineTo(W,ty);ctx.stroke();ctx.setLineDash([]);
+}
+setInterval(function(){upd();drawTrend();var n=new Date();document.getElementById('clock').textContent=('0'+n.getHours()).slice(-2)+':'+('0'+n.getMinutes()).slice(-2)+':'+('0'+n.getSeconds()).slice(-2)},1000);
+// Auto-start boot on page load
+setTimeout(function(){if(!bootRunning)bootSequence()},500);
+var targetSet=-18, defSchd=8, defDur=6, forceState=0, forceTimer=0;
+function adjTarget(d){targetSet=Math.max(-30,Math.min(5,targetSet+d));document.getElementById('ctrlTarget').textContent=targetSet.toFixed(1);document.getElementById('targetTemp').textContent=targetSet.toFixed(1)}
+function forceDefrost(){forceState=4;forceTimer=80;document.getElementById('defrostStatus').textContent='ON';document.getElementById('defrostStatus').className='w'}
+function forceEngineOn(){forceState=2;forceTimer=200}
+function forceEngineOff(){forceState=0;forceTimer=0}
+function tgl(el){if(el.textContent==='ON'){el.textContent='OFF';el.className='tgl off'}else{el.textContent='ON';el.className='tgl on'}}
+function adjDefrostSchd(d){defSchd=Math.max(1,Math.min(24,defSchd+d));document.getElementById('defSchd').textContent=defSchd}
+function adjDefrostDur(d){defDur=Math.max(1,Math.min(15,defDur+d));document.getElementById('defDur').textContent=defDur}
+</script>
+</body>
+</html>

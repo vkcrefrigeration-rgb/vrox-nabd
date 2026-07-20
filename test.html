@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html><head><meta charset="UTF-8"></head>
+<body style="background:#0A0E17;color:#EDF2F4;font-family:Arial;padding:20px">
+<h2>API Test</h2>
+<div id="result"></div>
+<script>
+var r=document.getElementById('result');
+fetch('/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:'demo@vrox.com',password:'demo123'})})
+.then(function(x){return x.json()}).then(function(d){
+  if(d.token){
+    r.innerHTML='Login OK<br>';
+    fetch('/api/trucks',{headers:{'Authorization':'Bearer '+d.token}})
+    .then(function(x){return x.json()}).then(function(t){
+      r.innerHTML+='Trucks: '+t.length+'<br>';
+      t.forEach(function(u){r.innerHTML+=u.id+' — '+u.name+'<br>'});
+    }).catch(function(e){r.innerHTML+='Trucks FAIL: '+e});
+  } else {r.innerHTML='Login FAIL: '+JSON.stringify(d);}
+}).catch(function(e){r.innerHTML+='ERROR: '+e});
+</script>
+</body></html>

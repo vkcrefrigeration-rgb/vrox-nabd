@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1024,height=600">
+<title>VROX TITAN — Ground Charging Station</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#0A0E17;color:#EDF2F4;display:flex;justify-content:center;align-items:center;min-height:100vh;user-select:none}
+.screen{width:1024px;height:600px;background:#0A0E17;position:relative;overflow:hidden;border-radius:4px}
+.tb{height:30px;background:#141B2D;border-bottom:1px solid #2B2D42;display:flex;align-items:center;padding:0 12px}
+.tb .br{font-weight:800;font-size:13px;color:#9B5DE5}
+.tb .badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;margin-left:auto;margin-right:8px;border:1px solid rgba(155,93,229,0.3);background:rgba(155,93,229,0.12);color:#9B5DE5}
+.tb .clk{font-size:11px;color:#6A6F7E}
+.pg{position:absolute;top:30px;left:0;right:0;bottom:50px;display:none;padding:8px 12px;overflow-y:auto}
+.pg.on{display:block}
+.nv{position:absolute;bottom:0;left:0;right:0;height:50px;background:#141B2D;border-top:1px solid #2B2D42;display:flex}
+.nv button{flex:1;border:none;background:transparent;color:#6A6F7E;font-size:10px;font-weight:600;font-family:inherit;cursor:pointer;border-top:2px solid transparent;transition:0.2s}
+.nv button.on{color:#9B5DE5;border-top-color:#9B5DE5;background:rgba(155,93,229,0.06)}
+.nv button:hover{color:#9A9FAE}
+.ib{position:absolute;bottom:50px;left:0;right:0;height:15px;background:rgba(10,14,23,0.9);display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:8px;color:#3B3D52}
+
+.r{display:flex;gap:6px}.r2{display:flex;gap:6px;margin-top:4px}
+.ca{flex:1;background:linear-gradient(180deg,#141B2D,#0D1321);border:1px solid #2B2D42;border-radius:6px;padding:6px 8px;position:relative}
+.ca::after{content:'';position:absolute;top:0;left:8px;right:8px;height:1px;background:rgba(26,39,68,0.5)}
+.cat{font-size:8px;font-weight:700;color:#6A6F7E;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px}
+.cav{font-size:14px;font-weight:700;color:#EDF2F4;line-height:1.1}
+.cas{font-size:8px;color:#6A6F7E}
+.car{display:flex;justify-content:space-between;font-size:8px;color:#9A9FAE;margin-top:3px}
+.car b{color:#EDF2F4}
+.bar{background:rgba(43,45,66,0.5);border-radius:2px;height:3px;margin-top:2px;overflow:hidden}
+.bar .fill{height:100%;border-radius:2px;transition:width 0.5s}
+.bp{background:linear-gradient(90deg,#9B5DE5,#48CAE4)}
+.bu{background:linear-gradient(90deg,#00B4D8,#48CAE4)}
+.bg{background:linear-gradient(90deg,#2EC4B6,#48CAE4)}
+.bo{background:linear-gradient(90deg,#F4A261,#E76F51)}
+
+.dot{width:8px;height:8px;border-radius:50%;background:#2B2D42;display:inline-block}
+.dot.grn{background:#2EC4B6;box-shadow:0 0 4px #2EC4B6}
+.dot.org{background:#F4A261;box-shadow:0 0 4px #F4A261}
+.dot.red{background:#E63946;animation:blink 1s infinite}
+@keyframes blink{50%{opacity:0.3}}
+.g{color:#2EC4B6}.w{color:#F4A261}.r{color:#E63946}.b{color:#00B4D8}.p{color:#9B5DE5}
+
+/* Recognition badge */
+.recog{display:inline-block;padding:4px 12px;border-radius:6px;font-size:11px;font-weight:700;margin-right:6px}
+.recog.saryan{background:rgba(0,180,216,0.12);border:1px solid rgba(0,180,216,0.3);color:#00B4D8}
+.recog.tricora{background:rgba(46,196,182,0.12);border:1px solid rgba(46,196,182,0.3);color:#2EC4B6}
+.recog.unknown{background:rgba(108,117,125,0.12);border:1px solid rgba(108,117,125,0.3);color:#6A6F7E}
+.size-tag{display:inline-block;padding:3px 8px;border-radius:4px;font-size:9px;font-weight:600;background:rgba(155,93,229,0.1);border:1px solid rgba(155,93,229,0.2);color:#9B5DE5}
+
+.set-grid{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.set-card{background:linear-gradient(180deg,#141B2D,#0D1321);border:1px solid #2B2D42;border-radius:6px;padding:8px 10px}
+.set-card h3{font-size:10px;font-weight:700;color:#8D99AE;margin-bottom:5px;border-bottom:1px solid #2B2D42;padding-bottom:3px}
+.set-row{display:flex;justify-content:space-between;font-size:9px;color:#EDF2F4;margin-bottom:2px}
+.set-row span{color:#8D99AE}
+
+.btn-sm{display:inline-block;padding:4px 14px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid rgba(230,57,70,0.2);background:rgba(230,57,70,0.08);color:#E63946}
+.btn-sm:hover{background:rgba(230,57,70,0.15)}
+.btn-go{display:inline-block;padding:4px 14px;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid rgba(46,196,182,0.3);background:rgba(46,196,182,0.1);color:#2EC4B6}
+
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(155,93,229,0.3)}70%{box-shadow:0 0 0 15px rgba(155,93,229,0)}100%{box-shadow:0 0 0 0 rgba(155,93,229,0)}}
+.ch{text-align:center;padding-top:8px}
+.chr{width:120px;height:120px;border-radius:50%;margin:0 auto;background:radial-gradient(circle,rgba(26,39,68,0.9)0%,rgba(10,14,23,0)75%);border:2px solid rgba(155,93,229,0.3);display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cht{font-size:36px;font-weight:900;color:#9B5DE5;line-height:1}
+.chb{width:380px;height:6px;background:rgba(43,45,66,0.5);border-radius:3px;overflow:hidden;margin:10px auto}
+.chb .fill{height:100%;border-radius:3px;background:linear-gradient(90deg,#9B5DE5,#48CAE4);transition:width 0.5s}
+.ci{display:flex;justify-content:center;gap:24px;margin-top:8px;font-size:11px;color:#8D99AE}
+.ci span{color:#EDF2F4;font-weight:600}
+
+.pg::-webkit-scrollbar{width:4px}.pg::-webkit-scrollbar-thumb{background:#2B2D42;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="screen">
+
+<div class="tb">
+  <span class="br">TITAN</span>
+  <span class="badge" id="badge">STANDBY</span>
+  <span class="clk" id="clock"></span>
+</div>
+
+<!-- ====== MAIN PAGE ====== -->
+<div class="pg on" id="main">
+
+  <!-- Auto-Recognition Row -->
+  <div class="r" style="margin-bottom:6px">
+    <div class="ca" style="flex:2">
+      <div class="cat">CONNECTED TRUCK</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:2px">
+        <span class="recog unknown" id="truckType">NO TRUCK</span>
+        <span class="size-tag" id="truckSize" style="display:none"></span>
+        <span style="font-size:12px;font-weight:600;color:#EDF2F4" id="truckID">---</span>
+      </div>
+      <div class="car"><span>System</span><b id="sysTypeTxt">---</b><span>Plates</span><b id="plateCount">---</b><span>Volume</span><b id="plateVol">---</b><span>L</span></div>
+    </div>
+    <div class="ca" style="flex:1;text-align:center">
+      <div class="cat">STATION SIZE</div>
+      <div class="cav" style="font-size:13px;color:#9B5DE5">Titan Standard</div>
+      <div class="cas">45 HP — 100 L/min</div>
+    </div>
+    <div class="ca" style="flex:1;text-align:center">
+      <div class="cat">POWER SOURCE</div>
+      <div class="cav" style="font-size:13px;color:#2EC4B6">Electric 400V</div>
+      <div class="cas">3-Phase — 50/60 Hz</div>
+    </div>
+  </div>
+
+  <!-- Charging Parameters (dynamic) -->
+  <div class="r">
+    <div class="ca" style="text-align:center"><div class="cat">SUPPLY TEMP</div><div class="cav" id="supplyTemp" style="font-size:22px;color:#9B5DE5">-42.0</div><div class="cas">&deg;C to truck</div></div>
+    <div class="ca" style="text-align:center"><div class="cat">RETURN TEMP</div><div class="cav" id="returnTemp" style="font-size:22px">---</div><div class="cas">&deg;C from truck</div></div>
+    <div class="ca" style="text-align:center"><div class="cat">FLOW RATE</div><div class="cav" id="titanFlow" style="font-size:22px;color:#00B4D8">0</div><div class="cas">L/min</div></div>
+    <div class="ca" style="text-align:center"><div class="cat">ENERGY</div><div class="cav" id="titanEnergy" style="font-size:22px">0</div><div class="cas">kWh delivered</div></div>
+    <div class="ca" style="text-align:center"><div class="cat">EST TIME</div><div class="cav" id="estTime" style="font-size:22px">---</div><div class="cas">min remaining</div></div>
+  </div>
+
+  <!-- Progress -->
+  <div style="margin-top:6px">
+    <div style="display:flex;justify-content:space-between;font-size:10px;color:#8D99AE;margin-bottom:2px"><span id="progressLabel">CHARGE PROGRESS</span><span id="progressPct">0%</span></div>
+    <div class="chb" style="width:100%"><div class="fill" id="progressBar" style="width:0%"></div></div>
+    <div class="car" style="margin-top:4px">
+      <span>Start: <b id="chStart">---</b>&deg;C</span>
+      <span>Target: <b id="chTarget">---</b>&deg;C</span>
+      <span>Current: <b id="chCurrent">---</b>&deg;C</span>
+    </div>
+  </div>
+
+  <!-- Safety Row -->
+  <div class="r2">
+    <div class="ca"><div class="cat">SAFETY</div>
+      <div class="car"><span>Dry-Break</span><b id="dryBreak" style="color:#8D99AE">WAITING</b></div>
+      <div class="car"><span>Flow OK</span><b id="flowOK" style="color:#8D99AE">---</b></div>
+      <div class="car"><span>Pressure</span><b id="pressOK" class="g">NORMAL</b></div>
+      <div class="car"><span>Leak Check</span><b id="leakOK" class="g">PASS</b></div>
+    </div>
+    <div class="ca"><div class="cat">COMPRESSOR</div>
+      <div class="car"><span>Status</span><b id="compStatus" style="color:#8D99AE">OFF</b></div>
+      <div class="car"><span>Stage</span><b id="compStage">---</b></div>
+      <div class="car"><span>Speed</span><b id="compSpeed">0</b><span>%</span></div>
+      <div class="car"><span>Cond Fans</span><b id="condFans">0</b><span>%</span></div>
+    </div>
+    <div class="ca"><div class="cat">KCOOH TANKS</div>
+      <div class="car"><span>Balance</span><b id="balTank">72</b><span>%</span></div>
+      <div class="bar"><div class="fill bg" id="balBar" style="width:72%"></div></div>
+      <div class="car"><span>Collection</span><b id="colTank">28</b><span>%</span></div>
+      <div class="bar"><div class="fill bo" id="colBar" style="width:28%"></div></div>
+      <div class="car"><span>Tank Temp</span><b id="tankTemp">-25</b><span>&deg;C</span></div>
+    </div>
+    <div class="ca"><div class="cat">PUMP</div>
+      <div class="car"><span>Speed</span><b id="pumpTitan">0</b><span>%</span></div>
+      <div class="car"><span>PID Flow SP</span><b id="flowSP">---</b><span>L/min</span></div>
+      <div class="car"><span>PID Temp SP</span><b id="tempSP" class="p">-42.0</b><span>&deg;C</span></div>
+      <div class="car"><span>Mode</span><b id="pumpMode" style="color:#8D99AE">STOPPED</b></div>
+    </div>
+  </div>
+
+  <!-- Charge buttons -->
+  <div style="text-align:center;margin-top:6px">
+    <span class="btn-go" onclick="startCharge()">START CHARGE</span>
+    <span class="btn-sm" onclick="stopCharge()">STOP</span>
+  </div>
+</div>
+
+<!-- ====== CHARGE PAGE (Active) ====== -->
+<div class="pg" id="charge">
+  <div class="ch">
+    <div style="font-size:15px;font-weight:700;color:#EDF2F4;margin-bottom:6px" id="chTitle">TITAN CHARGING</div>
+    <div class="chr pulse" id="chargeRing"><div class="cht" id="chRingTemp">-28</div><div style="font-size:10px;color:#8D99AE">&deg;C</div></div>
+  </div>
+  <div class="chb"><div class="fill" id="chFill2" style="width:65%"></div></div>
+  <div style="text-align:center;font-size:16px;font-weight:700;color:#9B5DE5;margin-top:4px" id="chPct2">65%</div>
+  <div class="ci"><div>Flow: <span id="chFlow2">60</span> L/min</div><div>Energy: <span id="chEnergy2">12.8</span> kWh</div><div>Remaining: <span id="chRemain2">6</span> min</div></div>
+  <div style="text-align:center;font-size:11px;color:#8D99AE;margin-top:6px">Supply: <span style="color:#9B5DE5">-42</span>&deg;C | Return: <span id="chReturn" style="color:#EDF2F4">-28</span>&deg;C</div>
+  <div style="text-align:center;margin-top:10px"><span class="btn-sm" onclick="stopCharge()">STOP CHARGE</span></div>
+</div>
+
+<!-- ====== SETTINGS PAGE ====== -->
+<div class="pg" id="settings">
+  <div style="font-size:13px;font-weight:700;color:#EDF2F4;margin-bottom:6px">Charging Parameters &amp; Limits</div>
+  <div class="set-grid">
+    <div class="set-card"><h3>SARYAN CHARGING</h3>
+      <div class="set-row"><span>Flow Rate</span><span class="p">60 L/min</span></div>
+      <div class="set-row"><span>Target Temp</span><span class="p">-40 &deg;C</span></div>
+      <div class="set-row"><span>Max Time</span><span>20 min</span></div>
+      <div class="set-row"><span>Volume</span><span>~260 L</span></div>
+    </div>
+    <div class="set-card"><h3>TRICORA — LARGE</h3>
+      <div class="set-row"><span>Flow Rate</span><span class="p">100 L/min</span></div>
+      <div class="set-row"><span>Target Temp</span><span class="p">-40 &deg;C</span></div>
+      <div class="set-row"><span>Max Time</span><span>70 min</span></div>
+      <div class="set-row"><span>Plates</span><span>24-40</span></div>
+    </div>
+    <div class="set-card"><h3>TRICORA — MEDIUM</h3>
+      <div class="set-row"><span>Flow Rate</span><span class="p">85 L/min</span></div>
+      <div class="set-row"><span>Target Temp</span><span class="p">-38 &deg;C</span></div>
+      <div class="set-row"><span>Max Time</span><span>35 min</span></div>
+      <div class="set-row"><span>Plates</span><span>14-24</span></div>
+    </div>
+    <div class="set-card"><h3>TRICORA — SMALL</h3>
+      <div class="set-row"><span>Flow Rate</span><span class="p">60 L/min</span></div>
+      <div class="set-row"><span>Target Temp</span><span class="p">-35 &deg;C</span></div>
+      <div class="set-row"><span>Max Time</span><span>18 min</span></div>
+      <div class="set-row"><span>Plates</span><span>6-14</span></div>
+    </div>
+    <div class="set-card"><h3>TRICORA — MINI</h3>
+      <div class="set-row"><span>Flow Rate</span><span class="p">30 L/min</span></div>
+      <div class="set-row"><span>Target Temp</span><span class="p">-30 &deg;C</span></div>
+      <div class="set-row"><span>Max Time</span><span>10 min</span></div>
+      <div class="set-row"><span>Plates</span><span>2-6</span></div>
+    </div>
+    <div class="set-card"><h3>SAFETY LIMITS</h3>
+      <div class="set-row"><span>Max Pressure</span><span class="r">8.0 bar</span></div>
+      <div class="set-row"><span>Min Flow</span><span class="w">20 L/min</span></div>
+      <div class="set-row"><span>Max Temp (Supply)</span><span class="r">-45 &deg;C</span></div>
+      <div class="set-row"><span>Max Charge Time</span><span>90 min</span></div>
+    </div>
+    <div class="set-card"><h3>NETWORK</h3>
+      <div class="set-row"><span>Titan IP</span><span>192.168.1.30</span></div>
+      <div class="set-row"><span>Modbus Port</span><span>502</span></div>
+      <div class="set-row"><span>Cloud MQTT</span><span class="g">CONNECTED</span></div>
+      <div class="set-row"><span>Station ID</span><span>STD-003</span></div>
+    </div>
+    <div class="set-card"><h3>STATION INFO</h3>
+      <div class="set-row"><span>Model</span><span>Titan Standard</span></div>
+      <div class="set-row"><span>Compressor</span><span>45 HP Scroll</span></div>
+      <div class="set-row"><span>Refrigerant</span><span>R-449A</span></div>
+      <div class="set-row"><span>Coolant</span><span class="p">KCOOH+KAc 35/20</span></div>
+    </div>
+    <div class="set-card"><h3>COOLANT SPECS</h3>
+      <div class="set-row"><span>Type</span><span class="p">KCOOH+KAc</span></div>
+      <div class="set-row"><span>Eutectic Point</span><span class="r">-48 &deg;C</span></div>
+      <div class="set-row"><span>Supply Temp</span><span class="p">-42 &deg;C</span></div>
+      <div class="set-row"><span>Safe Limit</span><span class="g">-45 &deg;C</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== HISTORY PAGE ====== -->
+<div class="pg" id="history">
+  <div style="font-size:13px;font-weight:700;color:#EDF2F4;margin-bottom:6px">Session History</div>
+  <div style="display:flex;flex-direction:column;gap:3px;font-size:10px">
+    <div style="display:flex;background:#141B2D;border:1px solid #2B2D42;border-radius:4px;padding:5px 8px;color:#6A6F7E"><span style="width:70px">Date</span><span style="width:65px">Time</span><span style="flex:1">Truck</span><span style="width:70px">Type</span><span style="width:50px">kWh</span><span style="width:40px">Min</span><span style="width:70px">Status</span></div>
+    <div style="display:flex;background:#141B2D;border:1px solid #2B2D42;border-radius:4px;padding:5px 8px"><span style="width:70px">16/07/26</span><span style="width:65px">14:20</span><span style="flex:1;color:#EDF2F4">TRK-007</span><span style="width:70px;color:#9B5DE5">SARYAN</span><span style="width:50px">18.2</span><span style="width:40px">14</span><span style="width:70px" class="g">COMPLETE</span></div>
+    <div style="display:flex;background:#141B2D;border:1px solid #2B2D42;border-radius:4px;padding:5px 8px"><span style="width:70px">16/07/26</span><span style="width:65px">14:00</span><span style="flex:1;color:#EDF2F4">TRK-003</span><span style="width:70px" class="g">TRICORA</span><span style="width:50px">55.1</span><span style="width:40px">62</span><span style="width:70px" class="g">COMPLETE</span></div>
+    <div style="display:flex;background:#141B2D;border:1px solid #2B2D42;border-radius:4px;padding:5px 8px"><span style="width:70px">16/07/26</span><span style="width:65px">13:30</span><span style="flex:1;color:#EDF2F4">VAN-012</span><span style="width:70px" class="g">TRICORA</span><span style="width:50px">28.7</span><span style="width:40px">32</span><span style="width:70px" class="g">COMPLETE</span></div>
+    <div style="display:flex;background:#141B2D;border:1px solid #2B2D42;border-radius:4px;padding:5px 8px"><span style="width:70px">16/07/26</span><span style="width:65px">13:15</span><span style="flex:1;color:#EDF2F4">SCO-045</span><span style="width:70px" class="g">TRICORA</span><span style="width:50px">5.8</span><span style="width:40px">7</span><span style="width:70px" class="g">COMPLETE</span></div>
+    <div style="display:flex;background:#141B2D;border:1px solid #2B2D42;border-radius:4px;padding:5px 8px"><span style="width:70px">16/07/26</span><span style="width:65px">12:50</span><span style="flex:1;color:#EDF2F4">TRK-001</span><span style="width:70px;color:#9B5DE5">SARYAN</span><span style="width:50px">19.1</span><span style="width:40px">15</span><span style="width:70px" class="g">COMPLETE</span></div>
+  </div>
+  <div class="r2" style="font-size:10px;color:#6A6F7E">
+    <div class="ca" style="text-align:center"><span class="g">Today:</span> <b style="color:#EDF2F4">7</b> sessions / <b class="p">211</b> kWh</div>
+    <div class="ca" style="text-align:center"><span class="g">This Week:</span> <b style="color:#EDF2F4">142</b> / <b class="p">4,210</b> kWh</div>
+    <div class="ca" style="text-align:center"><span class="g">This Month:</span> <b style="color:#EDF2F4">580</b> / <b class="p">17,500</b> kWh</div>
+  </div>
+</div>
+
+<!-- ====== ALARMS PAGE ====== -->
+<div class="pg" id="alarms">
+  <div style="font-size:13px;font-weight:700;color:#EDF2F4;margin-bottom:6px">Alarms</div>
+  <div style="display:flex;flex-direction:column;gap:3px">
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#141B2D;border:1px solid #2B2D42;border-radius:5px"><span class="g">&#10003;</span><span style="font-size:8px;color:#6A6F7E;width:35px">14:32</span><span style="flex:1;font-size:10px">0101 — Dry-Break disconnected — Auto-stop</span><span style="font-size:8px" class="g">OK</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#141B2D;border:1px solid #2B2D42;border-radius:5px"><span class="w">&#9888;</span><span style="font-size:8px;color:#6A6F7E;width:35px">11:00</span><span style="flex:1;font-size:10px">0103 — High Pressure — Reduced load</span><span style="font-size:8px" class="w">PENDING</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:#141B2D;border:1px solid #2B2D42;border-radius:5px"><span class="g">&#10003;</span><span style="font-size:8px;color:#6A6F7E;width:35px">09:20</span><span style="flex:1;font-size:10px">0105 — Leak Detected — Inspected OK</span><span style="font-size:8px" class="g">OK</span></div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nv">
+  <button class="on" onclick="go('main',this)">MAIN</button>
+  <button onclick="go('charge',this)">CHARGE</button>
+  <button onclick="go('settings',this)">PARAMS</button>
+  <button onclick="go('history',this)">HISTORY</button>
+  <button onclick="go('alarms',this)">ALARMS</button>
+</div>
+<div class="ib"><span>PLC: <span class="g" id="plcStatus">STANDBY</span></span><span>Titan Station STD-003 | 45 HP | R-449A</span><span>Refresh: <span id="refreshCount">0</span></span></div>
+</div>
+
+<script>
+function go(id,btn){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on')});document.getElementById(id).classList.add('on');document.querySelectorAll('.nv button').forEach(function(b){b.classList.remove('on')});btn.classList.add('on')}
+
+var c=0, charging=false, progress=0;
+var simType=0, simSize=4, simVol=260, simPlates=38, simTarget=-40, simFlow=60, simID='TRK-007';
+
+// Cycle through different truck types for demo
+function cycleTruck(){
+  var cycle = Math.floor(c/200) % 5;
+  if(cycle===0){simType=0;simSize=4;simVol=260;simPlates=1;simTarget=-40;simFlow=60;simID='TRK-007'}
+  else if(cycle===1){simType=1;simSize=4;simVol=684;simPlates=38;simTarget=-40;simFlow=100;simID='TRK-003'}
+  else if(cycle===2){simType=1;simSize=3;simVol=360;simPlates=20;simTarget=-38;simFlow=85;simID='VAN-012'}
+  else if(cycle===3){simType=1;simSize=2;simVol=180;simPlates=10;simTarget=-35;simFlow=60;simID='VAN-008'}
+  else{simType=1;simSize=1;simVol=72;simPlates=4;simTarget=-30;simFlow=30;simID='SCO-045'}
+}
+
+function upd(){
+  c++; cycleTruck();
+  if(charging){progress=Math.min(100,progress+0.8);if(progress>=100){charging=false;progress=0}}
+  var badge=document.getElementById('badge');
+  if(charging){badge.textContent='CHARGING';badge.style.color='#F4A261';badge.style.borderColor='rgba(244,162,97,0.3)';badge.style.background='rgba(244,162,97,0.12)'}
+  else{badge.textContent='STANDBY';badge.style.color='#9B5DE5';badge.style.borderColor='rgba(155,93,229,0.3)';badge.style.background='rgba(155,93,229,0.12)'}
+
+  // Truck recognition
+  var typeEl=document.getElementById('truckType'),szEl=document.getElementById('truckSize');
+  if(simType===0){typeEl.textContent='SARYAN';typeEl.className='recog saryan'}
+  else{typeEl.textContent='TRICORA';typeEl.className='recog tricora'}
+  szEl.style.display='inline-block';
+  var sizes=['','MINI','SMALL','MEDIUM','LARGE'];szEl.textContent=sizes[simSize];
+  document.getElementById('truckID').textContent=simID;
+  document.getElementById('sysTypeTxt').textContent=simType===0?'SARYAN':'TRICORA';
+  document.getElementById('plateCount').textContent=simPlates;
+  document.getElementById('plateVol').textContent=Math.round(simVol);
+
+  // Flow setpoint
+  document.getElementById('titanFlow').textContent=charging?simFlow:0;
+  document.getElementById('flowSP').textContent=simFlow;
+  document.getElementById('tempSP').textContent=charging?'-42.0':'---';
+
+  // Supply temp
+  document.getElementById('supplyTemp').textContent=charging?'-42.0':'---';
+  var retTemp=charging?-42+15*(progress/100):0;
+  document.getElementById('returnTemp').textContent=charging?retTemp.toFixed(1):'---';
+  document.getElementById('titanEnergy').textContent=charging?(simVol/1000*1.39*2.8*15/3600*progress/100).toFixed(1):'0';
+  document.getElementById('estTime').textContent=charging?Math.round(simVol/simFlow*(100-progress)/100):'---';
+
+  // Progress
+  document.getElementById('progressPct').textContent=Math.round(progress)+'%';
+  document.getElementById('progressBar').style.width=progress+'%';
+  document.getElementById('chStart').textContent=charging?'-5.0':'---';
+  document.getElementById('chTarget').textContent=charging?simTarget.toFixed(0):'---';
+  document.getElementById('chCurrent').textContent=charging?retTemp.toFixed(1):'---';
+
+  // Safety
+  document.getElementById('dryBreak').textContent='CONNECTED';document.getElementById('dryBreak').style.color='#2EC4B6';
+  document.getElementById('flowOK').textContent='OK';document.getElementById('flowOK').style.color='#2EC4B6';
+  document.getElementById('compStatus').textContent=charging?'RUNNING':'OFF';document.getElementById('compStatus').style.color=charging?'#F4A261':'#8D99AE';
+  document.getElementById('compStage').textContent=charging?'HIGH':'---';
+  document.getElementById('compSpeed').textContent=charging?Math.round(90):0;
+  document.getElementById('condFans').textContent=charging?Math.round(90):0;
+  document.getElementById('pumpTitan').textContent=charging?Math.round(68):0;
+  document.getElementById('pumpMode').textContent=charging?'CIRCULATING':'STOPPED';document.getElementById('pumpMode').style.color=charging?'#48CAE4':'#8D99AE';
+
+  // Charge page
+  document.getElementById('chRingTemp').textContent=charging?retTemp.toFixed(0):'-28';
+  document.getElementById('chFill2').style.width=progress+'%';
+  document.getElementById('chPct2').textContent=Math.round(progress)+'%';
+  document.getElementById('chFlow2').textContent=simFlow;
+  document.getElementById('chEnergy2').textContent=(simVol/1000*1.39*2.8*15/3600*progress/100).toFixed(1);
+  document.getElementById('chRemain2').textContent=Math.round((100-progress)/100*simVol/simFlow);
+  document.getElementById('chReturn').textContent=charging?retTemp.toFixed(1):'-28';
+
+  document.getElementById('refreshCount').textContent=c;
+}
+function startCharge(){charging=true;progress=0}
+function stopCharge(){charging=false;progress=0}
+
+setInterval(function(){upd();var n=new Date();document.getElementById('clock').textContent=('0'+n.getHours()).slice(-2)+':'+('0'+n.getMinutes()).slice(-2)+':'+('0'+n.getSeconds()).slice(-2)},1000);
+upd();
+</script>
+</body>
+</html>
